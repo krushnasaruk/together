@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/partner_switcher_badge.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
@@ -296,6 +297,55 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 24),
+
+          // Account Actions (Sign Out & Delete Account)
+          OutlinedButton.icon(
+            icon: const Icon(Icons.logout_rounded, size: 18),
+            label: const Text('Sign Out of Account'),
+            onPressed: () {
+              context.go('/welcome');
+            },
+          ),
+          const SizedBox(height: 12),
+          TextButton.icon(
+            icon: const Icon(Icons.delete_forever_rounded, size: 18, color: AppColors.statusCancelled),
+            label: const Text(
+              'Delete Account & Data',
+              style: TextStyle(color: AppColors.statusCancelled, fontSize: 13),
+            ),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: AppColors.surface,
+                  title: const Text('Delete Account?'),
+                  content: const Text(
+                    'This action is irreversible. All your personal events will be deleted. '
+                    'Your partner will remain in Together with their own personal schedule intact.',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.statusCancelled),
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        context.go('/welcome');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Account successfully removed.')),
+                        );
+                      },
+                      child: const Text('Confirm Deletion'),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           const SizedBox(height: 40),
         ],

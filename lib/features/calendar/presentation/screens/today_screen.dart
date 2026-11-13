@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/partner_switcher_badge.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../availability/presentation/providers/availability_provider.dart';
 import '../../../availability/presentation/providers/status_provider.dart';
 import '../../../availability/presentation/widgets/status_picker_sheet.dart';
 import '../../../events/domain/models/event_model.dart';
@@ -12,6 +13,7 @@ import '../../../events/presentation/widgets/event_details_sheet.dart';
 import '../../../events/presentation/widgets/event_form_sheet.dart';
 import '../../../notifications/presentation/providers/notification_provider.dart';
 import '../../../notifications/presentation/widgets/notifications_sheet.dart';
+import '../../../together_time/presentation/widgets/add_plan_sheet.dart';
 
 /// The primary home screen displaying today's schedule for both partners.
 class TodayScreen extends ConsumerWidget {
@@ -32,6 +34,7 @@ class TodayScreen extends ConsumerWidget {
 
     // Watch today's events
     final todayEvents = ref.watch(eventsForDateProvider(today));
+    final freeWindows = ref.watch(sharedFreeWindowsProvider(today));
     final myEvents =
         todayEvents.where((e) => e.ownerId == currentUser.uid).toList();
     final partnerEvents = todayEvents
@@ -108,7 +111,13 @@ class TodayScreen extends ConsumerWidget {
         children: [
           // Partner Status Card & Broadcast Trigger
           _buildPartnerStatusCard(context, partnerName, partnerStatus),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
+
+          // Potential Time Together (Sections 4.2 & 4.5)
+          if (freeWindows.isNotEmpty) ...[
+            _buildPotentialTimeTogetherCard(context, freeWindows),
+            const SizedBox(height: 24),
+          ],
 
           // Shared Together Moments (if any today)
           if (sharedEvents.isNotEmpty) ...[
@@ -275,6 +284,100 @@ class TodayScreen extends ConsumerWidget {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPotentialTimeTogetherCard(
+    BuildContext context,
+    List<dynamic> freeWindows,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: AppColors.togetherBlueLight,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.handshake_outlined,
+                  size: 18,
+                  color: AppColors.togetherBlue,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Potential Time Together',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Suggested overlapping free windows (informational only)',
+                      style: TextStyle(fontSize: 11, color: AppColors.textTertiary),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton(
+                onPressed: () => AddPlanSheet.show(context),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                ),
+                child: const Text('Plan', style: TextStyle(fontSize: 12)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(),
+          const SizedBox(height: 8),
+          ...freeWindows.take(2).map((window) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceSecondary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.wb_sunny_outlined, size: 14, color: AppColors.togetherBlue),
+                  const SizedBox(width: 8),
+                  Text(
+                    window.formattedTime as String,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      window.suggestion as String,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );

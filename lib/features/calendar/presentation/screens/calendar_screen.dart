@@ -534,7 +534,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               child: Row(
                                 children: [
                                   Icon(Icons.warning_amber_rounded,
-                                      size: 13, color: AppColors.statusTentative),
+                                      size: 13,
+                                      color: AppColors.statusTentative),
                                   SizedBox(width: 4),
                                   Text(
                                     'Schedule Overlap / Coinciding commitments',

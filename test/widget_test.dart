@@ -78,8 +78,7 @@ void main() {
     expect(find.text('Busy (Private)'), findsOneWidget);
   });
 
-  testWidgets(
-      'Bottom navigation switches seamlessly across all 4 destinations',
+  testWidgets('Bottom navigation switches seamlessly across all 4 destinations',
       (tester) async {
     tester.view.physicalSize = const Size(800, 1400);
     tester.view.devicePixelRatio = 1.0;
