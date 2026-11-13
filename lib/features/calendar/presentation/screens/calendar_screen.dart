@@ -7,7 +7,7 @@ import '../../../../shared/widgets/clay/clay_segmented_bar.dart';
 import '../../../../shared/widgets/components/event_timeline_tile.dart';
 import '../../../../shared/widgets/mascot/mascot_states.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
-import '../../../../shared/widgets/partner_switcher_badge.dart';
+import '../../../../shared/widgets/together_header.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../events/domain/models/event_model.dart';
 import '../../../events/presentation/providers/event_provider.dart';
@@ -78,22 +78,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
-      appBar: AppBar(
-        title: const Row(
-          children: [
-            Text('Shared Calendar'),
-            SizedBox(width: 8),
-            PartnerSwitcherBadge(),
-          ],
+      appBar: TogetherHeader(
+        title: 'Shared Calendar',
+        subtitle: headerText,
+        customAction: IconButton(
+          icon: const Icon(Icons.today_rounded, size: 22),
+          tooltip: 'Go to Today',
+          visualDensity: VisualDensity.compact,
+          onPressed: _goToToday,
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.today_rounded),
-            tooltip: 'Go to Today',
-            onPressed: _goToToday,
-          ),
-          const SizedBox(width: AppTokens.space8),
-        ],
       ),
       body: Column(
         children: [

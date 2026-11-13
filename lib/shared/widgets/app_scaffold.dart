@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/onboarding/guided_tour_controller.dart';
 import '../../core/onboarding/guided_tour_registry.dart';
 import '../../core/onboarding/widgets/guided_tour_overlay.dart';
+import '../../features/notifications/presentation/widgets/in_app_notification_banner.dart';
 
 /// Root scaffold hosting the persistent bottom navigation bar and
 /// providing the top-level overlay for Miso's Little Guide.
-class AppScaffold extends StatefulWidget {
+class AppScaffold extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const AppScaffold({
@@ -16,10 +19,10 @@ class AppScaffold extends StatefulWidget {
   });
 
   @override
-  State<AppScaffold> createState() => _AppScaffoldState();
+  ConsumerState<AppScaffold> createState() => _AppScaffoldState();
 }
 
-class _AppScaffoldState extends State<AppScaffold> {
+class _AppScaffoldState extends ConsumerState<AppScaffold> {
   final GlobalKey _todayKey = GlobalKey();
   final GlobalKey _calendarKey = GlobalKey();
   final GlobalKey _togetherKey = GlobalKey();
@@ -55,12 +58,29 @@ class _AppScaffoldState extends State<AppScaffold> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GuidedTourOverlay(
-      child: Scaffold(
-        backgroundColor:
-            isDark ? AppColors.darkBackground : AppColors.background,
-        body: widget.navigationShell,
-        bottomNavigationBar: Container(
+    // Synchronize tab branch navigation with the active Guided Tour step
+    ref.listen<GuidedTourState>(guidedTourControllerProvider, (previous, next) {
+      if (next.isActive && next.currentStep != null) {
+        final stepId = next.currentStep!.id;
+        if (stepId == 'step_today') {
+          widget.navigationShell.goBranch(0);
+        } else if (stepId == 'step_calendar') {
+          widget.navigationShell.goBranch(1);
+        } else if (stepId == 'step_together') {
+          widget.navigationShell.goBranch(2);
+        } else if (stepId == 'step_profile') {
+          widget.navigationShell.goBranch(3);
+        }
+      }
+    });
+
+    return InAppNotificationBanner(
+      child: GuidedTourOverlay(
+        child: Scaffold(
+          backgroundColor:
+              isDark ? AppColors.darkBackground : AppColors.background,
+          body: widget.navigationShell,
+          bottomNavigationBar: Container(
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkSurface : AppColors.surface,
             border: Border(
@@ -138,6 +158,7 @@ class _AppScaffoldState extends State<AppScaffold> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

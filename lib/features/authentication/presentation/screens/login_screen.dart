@@ -6,7 +6,6 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../../shared/widgets/clay/clay_button.dart';
 import '../../../../shared/widgets/clay/clay_input.dart';
 import '../../../../shared/widgets/clay/together_toast.dart';
-import '../../../../shared/widgets/mascot/miso_character.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../../shared/widgets/motion/text_animations.dart';
 
@@ -101,10 +100,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ],
                     ),
                   ),
-                  const MisoCharacter(
-                    pose: MisoPose.relaxed,
-                    height: 64,
-                    width: 64,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: Image.asset(
+                      'assets/logo/together_icon.png',
+                      height: 64,
+                      width: 64,
+                    ),
                   ),
                 ],
               ),

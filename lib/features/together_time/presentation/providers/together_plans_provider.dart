@@ -26,71 +26,8 @@ class TogetherPlansNotifier extends StateNotifier<List<TogetherPlan>> {
       }
     } catch (_) {}
 
-    final now = DateTime.now();
-    state = [
-      TogetherPlan(
-        id: 'plan_01',
-        coupleId: 'couple_workspace_01',
-        type: TogetherPlanType.dateNight,
-        title: 'Sunset Picnic at the Skyline Vista',
-        description: 'Pack strawberries, sparkling cider, and warm blankets.',
-        targetDate: now.add(const Duration(days: 4)),
-        isCompleted: false,
-        createdById: 'user_alex',
-        createdByName: 'Alex',
-        createdAt: now.subtract(const Duration(days: 3)),
-      ),
-      TogetherPlan(
-        id: 'plan_02',
-        coupleId: 'couple_workspace_01',
-        type: TogetherPlanType.dateNight,
-        title: 'Cook Homemade Ravioli from Scratch',
-        description: 'Try the ricotta & spinach recipe from nonna.',
-        targetDate: now.add(const Duration(days: 9)),
-        isCompleted: true,
-        createdById: 'user_taylor',
-        createdByName: 'Taylor',
-        createdAt: now.subtract(const Duration(days: 10)),
-      ),
-      TogetherPlan(
-        id: 'plan_03',
-        coupleId: 'couple_workspace_01',
-        type: TogetherPlanType.bucketList,
-        title: 'See the Northern Lights in Tromsø',
-        description: 'Rent a glass igloo and watch aurora borealis together.',
-        targetDate: null,
-        isCompleted: false,
-        createdById: 'user_taylor',
-        createdByName: 'Taylor',
-        createdAt: now.subtract(const Duration(days: 20)),
-      ),
-      TogetherPlan(
-        id: 'plan_04',
-        coupleId: 'couple_workspace_01',
-        type: TogetherPlanType.bucketList,
-        title: 'Weekend Ceramic Pottery Workshop',
-        description: 'Make a pair of matching breakfast mugs.',
-        targetDate: now.add(const Duration(days: 14)),
-        isCompleted: false,
-        createdById: 'user_alex',
-        createdByName: 'Alex',
-        createdAt: now.subtract(const Duration(days: 5)),
-      ),
-      TogetherPlan(
-        id: 'plan_05',
-        coupleId: 'couple_workspace_01',
-        type: TogetherPlanType.occasion,
-        title: 'First Date Anniversary',
-        description:
-            'Celebrate where it all began at the indie bookstore cafe.',
-        targetDate: now.add(const Duration(days: 28)),
-        isCompleted: false,
-        createdById: 'user_alex',
-        createdByName: 'Alex',
-        createdAt: now.subtract(const Duration(days: 60)),
-      ),
-    ];
-    _saveToPrefs();
+    // Clean slate with no dummy items
+    state = const [];
   }
 
   Future<void> _saveToPrefs() async {

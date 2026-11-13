@@ -11,7 +11,7 @@ import '../../../../shared/widgets/components/together_avatar.dart';
 import '../../../../shared/widgets/mascot/mascot_states.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../../shared/widgets/motion/text_animations.dart';
-import '../../../../shared/widgets/partner_switcher_badge.dart';
+import '../../../../shared/widgets/together_header.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../availability/presentation/providers/availability_provider.dart';
 import '../../../availability/presentation/providers/status_provider.dart';
@@ -20,9 +20,8 @@ import '../../../events/domain/models/event_model.dart';
 import '../../../events/presentation/providers/event_provider.dart';
 import '../../../events/presentation/widgets/event_details_sheet.dart';
 import '../../../events/presentation/widgets/event_form_sheet.dart';
+import '../../../notifications/domain/models/notification_model.dart';
 import '../../../notifications/presentation/providers/notification_provider.dart';
-import '../../../notifications/presentation/widgets/notifications_sheet.dart';
-import '../../../together_time/presentation/widgets/add_plan_sheet.dart';
 
 /// Tracks whether Miso has greeted the user during the current session
 final misoGreetingDismissedProvider = StateProvider<bool>((ref) => false);
@@ -43,11 +42,11 @@ class TodayScreen extends ConsumerWidget {
     final currentUser = auth.currentUser;
     final partnerName = currentUser.partnerName ?? 'Partner';
 
+    final currentUserStatus = ref.watch(currentUserStatusProvider);
     final partnerStatus = ref.watch(partnerStatusProvider);
-    final unreadNotifs = ref.watch(unreadNotificationCountProvider);
     final misoGreetingDismissed = ref.watch(misoGreetingDismissedProvider);
 
-    // Watch today's events
+    // Watch today's events dynamically
     final todayEvents = ref.watch(eventsForDateProvider(today));
     final freeWindows = ref.watch(sharedFreeWindowsProvider(today));
 
@@ -62,90 +61,14 @@ class TodayScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
-      appBar: AppBar(
-        title: Row(
-          children: [
-            const TogetherMascot(
-              pose: MisoPose.avatar,
-              height: 38,
-              width: 38,
-              animateOnTap: true,
-            ),
-            const SizedBox(width: AppTokens.space10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Good day, ${currentUser.displayName.split(' ').first}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: isDark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.textSecondary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                      const SizedBox(width: 8),
-                      const PartnerSwitcherBadge(),
-                    ],
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    formattedDate,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_none_rounded),
-                tooltip: 'Notifications',
-                onPressed: () => NotificationsSheet.show(context),
-              ),
-              if (unreadNotifs > 0)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: AppColors.error,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints:
-                        const BoxConstraints(minWidth: 16, minHeight: 16),
-                    child: Text(
-                      '$unreadNotifs',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(width: AppTokens.space8),
-        ],
+      appBar: TogetherHeader(
+        title: 'Today',
+        subtitle: formattedDate,
       ),
       body: RefreshIndicator(
         color: isDark ? AppColors.darkPrimary : AppColors.primaryDark,
         onRefresh: () async {
-          // Subtle refresh simulation
-          await Future.delayed(const Duration(milliseconds: 400));
+          await Future.delayed(const Duration(milliseconds: 300));
         },
         child: ListView(
           padding: const EdgeInsets.symmetric(
@@ -169,9 +92,31 @@ class TodayScreen extends ConsumerWidget {
               const SizedBox(height: AppTokens.space16),
             ],
 
-            // Partner-First Overview Card
+            // 1. Dynamic Daily Stats Bar (Real-time reactive counter)
+            _buildDynamicStatsBar(
+              context,
+              todayEventsCount: todayEvents.length,
+              freeWindows: freeWindows,
+              sharedEventsCount: sharedEvents.length,
+              isDark: isDark,
+            ),
+            const SizedBox(height: AppTokens.space16),
+
+            // 2. Active User Status Bar (Instant 1-tap update & live feedback)
+            _buildMyStatusCard(
+              context,
+              ref: ref,
+              currentUserStatus: currentUserStatus,
+              isDark: isDark,
+            ),
+            const SizedBox(height: AppTokens.space16),
+
+            // 3. Partner-First Overview Card with Poke & Nudge
             _buildPartnerOverviewCard(
               context,
+              ref: ref,
+              currentUserId: currentUser.uid,
+              currentUserName: currentUser.displayName,
               partnerName: partnerName,
               partnerStatus: partnerStatus,
               partnerEvents: partnerEvents,
@@ -179,7 +124,7 @@ class TodayScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppTokens.space20),
 
-            // Potential Time Together (Shared Free Windows)
+            // 4. Potential Time Together (Shared Free Windows)
             if (freeWindows.isNotEmpty) ...[
               _buildPotentialTimeTogetherCard(
                 context,
@@ -189,7 +134,7 @@ class TodayScreen extends ConsumerWidget {
               const SizedBox(height: AppTokens.space20),
             ],
 
-            // Shared Together Plans (if any today)
+            // 5. Shared Together Plans (if any today)
             if (sharedEvents.isNotEmpty) ...[
               const SectionHeader(
                 title: 'Together Tonight',
@@ -207,7 +152,7 @@ class TodayScreen extends ConsumerWidget {
               const SizedBox(height: AppTokens.space16),
             ],
 
-            // Partner's Schedule Section (Partner-First Principle)
+            // 6. Partner's Schedule Section (Partner-First Principle)
             SectionHeader(
               title: "${partnerName.split(' ').first}'s Schedule",
               subtitle: 'Daily commitments & busy intervals',
@@ -233,7 +178,7 @@ class TodayScreen extends ConsumerWidget {
               ),
             const SizedBox(height: AppTokens.space24),
 
-            // User's Own Schedule Section
+            // 7. User's Own Schedule Section
             const SectionHeader(
               title: 'Your Schedule',
               subtitle: 'Your plans and personal commitments',
@@ -279,8 +224,279 @@ class TodayScreen extends ConsumerWidget {
     );
   }
 
+  /// Dynamic real-time stats overview bar
+  Widget _buildDynamicStatsBar(
+    BuildContext context, {
+    required int todayEventsCount,
+    required List<dynamic> freeWindows,
+    required int sharedEventsCount,
+    required bool isDark,
+  }) {
+    int totalFreeMinutes = 0;
+    for (final w in freeWindows) {
+      totalFreeMinutes += (w.duration.inMinutes as int);
+    }
+    final freeHours = (totalFreeMinutes / 60).toStringAsFixed(1);
+
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatCapsule(
+            icon: Icons.event_note_rounded,
+            label: '$todayEventsCount',
+            sublabel: 'Events',
+            color: AppColors.primary,
+            isDark: isDark,
+          ),
+        ),
+        const SizedBox(width: AppTokens.space8),
+        Expanded(
+          child: _buildStatCapsule(
+            icon: Icons.timelapse_rounded,
+            label: '${freeHours}h',
+            sublabel: 'Overlap Free',
+            color: AppColors.togetherBlue,
+            isDark: isDark,
+          ),
+        ),
+        const SizedBox(width: AppTokens.space8),
+        Expanded(
+          child: _buildStatCapsule(
+            icon: Icons.favorite_rounded,
+            label: '$sharedEventsCount',
+            sublabel: 'Shared',
+            color: AppColors.partnerRose,
+            isDark: isDark,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCapsule({
+    required IconData icon,
+    required String label,
+    required String sublabel,
+    required Color color,
+    required bool isDark,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+        border: Border.all(
+          color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 14, color: color),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            sublabel,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Interactive User Status Card with 1-tap quick presets
+  Widget _buildMyStatusCard(
+    BuildContext context, {
+    required WidgetRef ref,
+    required StatusUpdate? currentUserStatus,
+    required bool isDark,
+  }) {
+    final statusText = currentUserStatus != null
+        ? '${currentUserStatus.preset.emoji} ${currentUserStatus.preset.title}${currentUserStatus.customNote != null && currentUserStatus.customNote!.isNotEmpty ? " • \"${currentUserStatus.customNote}\"" : ""}'
+        : 'Tap below to set your status';
+
+    return TogetherSurface(
+      surfaceType: ClaySurfaceType.raised,
+      padding: const EdgeInsets.all(AppTokens.space14),
+      accentColor: AppColors.primary,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.bolt_rounded,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Your Status',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    Text(
+                      statusText,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit_note_rounded, size: 20),
+                tooltip: 'Customize status',
+                visualDensity: VisualDensity.compact,
+                onPressed: () => StatusPickerSheet.show(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTokens.space10),
+          // 1-Tap Quick Presets Row
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildQuickPresetChip(
+                  preset: QuickStatusPreset.freeNow,
+                  isSelected:
+                      currentUserStatus?.preset == QuickStatusPreset.freeNow,
+                  onTap: () => ref
+                      .read(statusProvider.notifier)
+                      .setStatus(preset: QuickStatusPreset.freeNow),
+                  isDark: isDark,
+                ),
+                const SizedBox(width: 6),
+                _buildQuickPresetChip(
+                  preset: QuickStatusPreset.needFocus,
+                  isSelected:
+                      currentUserStatus?.preset == QuickStatusPreset.needFocus,
+                  onTap: () => ref
+                      .read(statusProvider.notifier)
+                      .setStatus(preset: QuickStatusPreset.needFocus),
+                  isDark: isDark,
+                ),
+                const SizedBox(width: 6),
+                _buildQuickPresetChip(
+                  preset: QuickStatusPreset.onMyWay,
+                  isSelected:
+                      currentUserStatus?.preset == QuickStatusPreset.onMyWay,
+                  onTap: () => ref
+                      .read(statusProvider.notifier)
+                      .setStatus(preset: QuickStatusPreset.onMyWay),
+                  isDark: isDark,
+                ),
+                const SizedBox(width: 6),
+                _buildQuickPresetChip(
+                  preset: QuickStatusPreset.takingBreak,
+                  isSelected:
+                      currentUserStatus?.preset == QuickStatusPreset.takingBreak,
+                  onTap: () => ref
+                      .read(statusProvider.notifier)
+                      .setStatus(preset: QuickStatusPreset.takingBreak),
+                  isDark: isDark,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickPresetChip({
+    required QuickStatusPreset preset,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.2)
+              : (isDark ? const Color(0xFF262C27) : const Color(0xFFF0EFEA)),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : Colors.transparent,
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(preset.emoji, style: const TextStyle(fontSize: 12)),
+            const SizedBox(width: 4),
+            Text(
+              preset.title,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected
+                    ? AppColors.primary
+                    : (isDark ? Colors.white70 : AppColors.textPrimary),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPartnerOverviewCard(
     BuildContext context, {
+    required WidgetRef ref,
+    required String currentUserId,
+    required String currentUserName,
     required String partnerName,
     required dynamic partnerStatus,
     required List<CalendarEvent> partnerEvents,
@@ -353,14 +569,40 @@ class TodayScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              OutlinedButton.icon(
-                onPressed: () => StatusPickerSheet.show(context),
-                icon: const Icon(Icons.bolt_rounded, size: 14),
-                label: const Text('Status', style: TextStyle(fontSize: 12)),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(70, 34),
+              // Playful Poke / Nudge Action Button ("콕 찌르기")
+              ElevatedButton.icon(
+                onPressed: () {
+                  ref
+                      .read(notificationProvider.notifier)
+                      .dispatchNotificationToPartner(
+                        senderId: currentUserId,
+                        senderName: currentUserName,
+                        type: NotificationType.statusUpdate,
+                        title:
+                            '👉 Poke from ${currentUserName.split(' ').first}!',
+                        body:
+                            '${currentUserName.split(' ').first} sent you a gentle poke! "Thinking of you 💕"',
+                      );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Poked ${partnerName.split(' ').first}! 👉'),
+                      duration: const Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                icon: const Text('👉', style: TextStyle(fontSize: 13)),
+                label: const Text('Poke', style: TextStyle(fontSize: 12)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.partnerRose.withOpacity(0.15),
+                  foregroundColor: AppColors.partnerRose,
+                  elevation: 0,
+                  minimumSize: const Size(64, 34),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
               ),
             ],
@@ -425,30 +667,88 @@ class TodayScreen extends ConsumerWidget {
   }) {
     return TogetherSurface(
       surfaceType: ClaySurfaceType.raised,
-      accentColor: AppColors.primary,
+      accentColor: AppColors.togetherBlue,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const TogetherMascot(
-                pose: MisoPose.happy,
-                height: 34,
-                width: 34,
+              Container(
+                padding: const EdgeInsets.all(AppTokens.space6),
+                decoration: BoxDecoration(
+                  color: AppColors.togetherBlue.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(AppTokens.radiusSm),
+                ),
+                child: const Icon(
+                  Icons.favorite_outline_rounded,
+                  size: 16,
+                  color: AppColors.togetherBlue,
+                ),
               ),
-              const SizedBox(width: AppTokens.space10),
+              const SizedBox(width: AppTokens.space8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Potential Time Together',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                     ),
                     Text(
-                      'Overlapping free windows suggested by Miso',
+                      '${freeWindows.length} free window${freeWindows.length > 1 ? 's' : ''} available today',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.textSecondary,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTokens.space12),
+          Wrap(
+            spacing: AppTokens.space8,
+            runSpacing: AppTokens.space8,
+            children: freeWindows.map((window) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTokens.space10,
+                  vertical: AppTokens.space6,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF242A27)
+                      : AppColors.togetherBlue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                  border: Border.all(
+                    color: AppColors.togetherBlue.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.schedule_rounded,
+                      size: 14,
+                      color: AppColors.togetherBlue,
+                    ),
+                    const SizedBox(width: AppTokens.space6),
+                    Text(
+                      '${DateFormat('h:mm a').format(window.start)} – ${DateFormat('h:mm a').format(window.end)}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.togetherBlue,
+                      ),
+                    ),
+                    const SizedBox(width: AppTokens.space4),
+                    Text(
+                      '(${window.duration.inMinutes}m)',
                       style: TextStyle(
                         fontSize: 11,
                         color: isDark
@@ -458,59 +758,9 @@ class TodayScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-              ),
-              TextButton(
-                onPressed: () => AddPlanSheet.show(context),
-                child: const Text('Plan', style: TextStyle(fontSize: 12)),
-              ),
-            ],
+              );
+            }).toList(),
           ),
-          const SizedBox(height: AppTokens.space10),
-          ...freeWindows.take(2).map((window) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 6.0),
-              child: TogetherSurface(
-                surfaceType: ClaySurfaceType.inset,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTokens.space12,
-                  vertical: AppTokens.space8,
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.wb_sunny_rounded,
-                      size: 14,
-                      color: Color(0xFF6B8A70),
-                    ),
-                    const SizedBox(width: AppTokens.space8),
-                    Text(
-                      window.formattedTime as String,
-                      style: AppTypography.scheduleTimeStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: isDark
-                            ? AppColors.darkTextPrimary
-                            : AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: AppTokens.space8),
-                    Expanded(
-                      child: Text(
-                        window.suggestion as String,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isDark
-                              ? AppColors.darkTextSecondary
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
         ],
       ),
     );

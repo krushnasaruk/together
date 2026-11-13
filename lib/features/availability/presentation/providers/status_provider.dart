@@ -29,31 +29,8 @@ class StatusNotifier extends StateNotifier<Map<String, StatusUpdate>> {
       }
     } catch (_) {}
 
-    // Seed initial active statuses
-    final now = DateTime.now();
-    state = {
-      'user_alex': StatusUpdate(
-        id: 'status_01',
-        userId: 'user_alex',
-        userName: 'Alex',
-        coupleId: 'couple_workspace_01',
-        preset: QuickStatusPreset.needFocus,
-        customNote: 'Focus sprint until 1:00 PM',
-        createdAt: now.subtract(const Duration(minutes: 30)),
-        expiresAt: now.add(const Duration(hours: 2)),
-      ),
-      'user_taylor': StatusUpdate(
-        id: 'status_02',
-        userId: 'user_taylor',
-        userName: 'Taylor',
-        coupleId: 'couple_workspace_01',
-        preset: QuickStatusPreset.freeNow,
-        customNote: 'Finished lecture, grabbed iced matcha 🍵',
-        createdAt: now.subtract(const Duration(minutes: 15)),
-        expiresAt: now.add(const Duration(hours: 2)),
-      ),
-    };
-    _saveToPrefs();
+    // Clean slate with no dummy statuses
+    state = const {};
   }
 
   Future<void> _saveToPrefs() async {
@@ -117,6 +94,17 @@ final partnerStatusProvider = Provider<StatusUpdate?>((ref) {
     if (entry.key != currentUserId && !entry.value.isExpired) {
       return entry.value;
     }
+  }
+  return null;
+});
+
+/// Returns the status of the current user
+final currentUserStatusProvider = Provider<StatusUpdate?>((ref) {
+  final currentUserId = ref.watch(authProvider).currentUser.uid;
+  final statuses = ref.watch(statusProvider);
+  final userStatus = statuses[currentUserId];
+  if (userStatus != null && !userStatus.isExpired) {
+    return userStatus;
   }
   return null;
 });

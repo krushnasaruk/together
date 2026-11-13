@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/constants/app_constants.dart';
 import 'core/router/app_router.dart';
+import 'core/services/render_keepalive_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 
@@ -11,6 +12,9 @@ class TogetherApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Keep Render backend awake with 5-minute periodic pings
+    ref.watch(renderKeepAliveProvider);
+
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
 

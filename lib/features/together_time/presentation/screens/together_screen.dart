@@ -10,7 +10,7 @@ import '../../../../shared/widgets/components/together_feedback.dart';
 import '../../../../shared/widgets/mascot/mascot_states.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../../shared/widgets/motion/text_animations.dart';
-import '../../../../shared/widgets/partner_switcher_badge.dart';
+import '../../../../shared/widgets/together_header.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../domain/models/together_model.dart';
 import '../providers/together_plans_provider.dart';
@@ -47,14 +47,9 @@ class _TogetherScreenState extends ConsumerState<TogetherScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
-      appBar: AppBar(
-        title: const Row(
-          children: [
-            Text('Together Space'),
-            SizedBox(width: 8),
-            PartnerSwitcherBadge(),
-          ],
-        ),
+      appBar: const TogetherHeader(
+        title: 'Together Space',
+        subtitle: 'Our plans, dates & memories',
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(

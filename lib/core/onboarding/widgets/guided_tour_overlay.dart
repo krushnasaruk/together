@@ -74,10 +74,34 @@ class _GuidedTourOverlayState extends ConsumerState<GuidedTourOverlay>
     final screenSize = MediaQuery.of(context).size;
     final padding = MediaQuery.of(context).padding;
 
-    // Retrieve live bounding box of registered target
+    // Retrieve live bounding box of registered target or compute safe tab target
     Rect? targetRect;
     if (step.targetId != null) {
-      targetRect = GuidedTourRegistry.getTargetRect(step.targetId!);
+      try {
+        targetRect = GuidedTourRegistry.getTargetRect(step.targetId!);
+      } catch (_) {
+        targetRect = null;
+      }
+
+      // Robust fallback for navigation destinations
+      if (targetRect == null) {
+        int? tabIndex;
+        if (step.targetId == 'tour_nav_today') tabIndex = 0;
+        if (step.targetId == 'tour_nav_calendar') tabIndex = 1;
+        if (step.targetId == 'tour_nav_together') tabIndex = 2;
+        if (step.targetId == 'tour_nav_profile') tabIndex = 3;
+
+        if (tabIndex != null) {
+          final tabWidth = screenSize.width / 4;
+          const navHeight = 72.0;
+          targetRect = Rect.fromLTWH(
+            tabIndex * tabWidth + 6,
+            screenSize.height - navHeight - padding.bottom + 2,
+            tabWidth - 12,
+            navHeight - 4,
+          );
+        }
+      }
     }
 
     // Determine bubble placement and pointer orientation
@@ -89,17 +113,17 @@ class _GuidedTourOverlayState extends ConsumerState<GuidedTourOverlay>
 
     if (!isModal) {
       final targetCenter = targetRect.center;
-      // Normalizes 0..screenWidth to -1.0 .. 1.0 for Align
-      pointerTargetX = (targetCenter.dx / screenSize.width) * 2 - 1;
+      pointerTargetX =
+          ((targetCenter.dx / screenSize.width) * 2 - 1).clamp(-0.75, 0.75);
 
       final isTargetInLowerHalf = targetCenter.dy > screenSize.height * 0.45;
       if (isTargetInLowerHalf) {
         // Place bubble above target
-        bottom = (screenSize.height - targetRect.top) + 6.0;
+        bottom = (screenSize.height - targetRect.top) + 12.0;
         pointerPos = SpeechPointerPosition.bottom;
       } else {
         // Place bubble below target
-        top = targetRect.bottom + 6.0;
+        top = targetRect.bottom + 12.0;
         pointerPos = SpeechPointerPosition.top;
       }
     }
@@ -136,7 +160,8 @@ class _GuidedTourOverlayState extends ConsumerState<GuidedTourOverlay>
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {
-              // Scrim tap advances or absorbs
+              // Tap scrim advances to next step
+              tourNotifier.nextStep();
             },
           ),
 
@@ -170,18 +195,25 @@ class _GuidedTourOverlayState extends ConsumerState<GuidedTourOverlay>
               top: top,
               bottom: bottom,
               child: SafeArea(
-                child: ComicDialogueBubble(
-                  key: ValueKey(step.id),
-                  title: step.title,
-                  message: step.message,
-                  pose: step.pose,
-                  stepIndex: tourState.currentIndex,
-                  totalSteps: tourState.totalSteps,
-                  pointerPosition: pointerPos,
-                  pointerTargetX: pointerTargetX,
-                  onNext: tourNotifier.nextStep,
-                  onPrevious: tourNotifier.previousStep,
-                  onClose: tourNotifier.skipTour,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: screenSize.height * 0.65,
+                  ),
+                  child: SingleChildScrollView(
+                    child: ComicDialogueBubble(
+                      key: ValueKey(step.id),
+                      title: step.title,
+                      message: step.message,
+                      pose: step.pose,
+                      stepIndex: tourState.currentIndex,
+                      totalSteps: tourState.totalSteps,
+                      pointerPosition: pointerPos,
+                      pointerTargetX: pointerTargetX,
+                      onNext: tourNotifier.nextStep,
+                      onPrevious: tourNotifier.previousStep,
+                      onClose: tourNotifier.skipTour,
+                    ),
+                  ),
                 ),
               ),
             ),

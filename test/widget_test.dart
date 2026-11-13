@@ -8,6 +8,7 @@ import 'package:together/features/events/presentation/providers/event_provider.d
 import 'package:together/features/notifications/domain/models/notification_model.dart';
 import 'package:together/features/notifications/presentation/providers/notification_provider.dart';
 import 'package:together/shared/widgets/partner_switcher_badge.dart';
+import 'package:together/shared/widgets/together_header.dart';
 
 void main() {
   setUp(() {
@@ -35,8 +36,9 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    // Verify Alex is the active user
-    expect(find.text('Good day, Alex'), findsOneWidget);
+    // Verify Alex is the active user and Today screen components render
+    expect(find.widgetWithText(TogetherHeader, 'Today'), findsOneWidget);
+    expect(find.textContaining('Hi Alex!'), findsOneWidget);
     expect(find.text("Taylor's Schedule"), findsOneWidget);
     expect(find.text('Your Schedule'), findsOneWidget);
     expect(find.byType(PartnerSwitcherBadge), findsWidgets);
@@ -53,6 +55,42 @@ void main() {
 
     final container = ProviderContainer();
     addTearDown(container.dispose);
+
+    // Seed events into clean slate for test
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    container.read(eventProvider.notifier).addEvent(
+          CalendarEvent(
+            id: 'test_dentist',
+            coupleId: 'couple_workspace_01',
+            ownerId: 'user_alex',
+            ownerName: 'Alex',
+            title: 'Dentist Checkup & Routine Cleaning',
+            startTime: today.add(const Duration(hours: 10)),
+            endTime: today.add(const Duration(hours: 11)),
+            category: EventCategory.personal,
+            visibility: EventVisibility.private,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+
+    container.read(eventProvider.notifier).addEvent(
+          CalendarEvent(
+            id: 'test_shopping',
+            coupleId: 'couple_workspace_01',
+            ownerId: 'user_taylor',
+            ownerName: 'Taylor',
+            title: 'Secret Anniversary Gift Shopping',
+            startTime: today.add(const Duration(hours: 15)),
+            endTime: today.add(const Duration(hours: 16)),
+            category: EventCategory.personal,
+            visibility: EventVisibility.private,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -81,7 +119,7 @@ void main() {
 
     // Taylor's view:
     // 1. Taylor now sees own secret shopping in full detail
-    expect(find.text('Good day, Taylor'), findsOneWidget);
+    expect(find.textContaining('Hi Taylor!'), findsOneWidget);
     expect(find.text('Secret Anniversary Gift Shopping'), findsOneWidget);
 
     // 2. Taylor sees Alex's dentist appointment as masked "Busy (Private)"
@@ -141,7 +179,9 @@ void main() {
     // 4. Return to Today tab
     await tester.tap(find.byIcon(Icons.wb_sunny_outlined));
     await tester.pumpAndSettle();
-    expect(find.text('Good day, Alex'), findsOneWidget);
+    expect(find.widgetWithText(TogetherHeader, 'Today'), findsOneWidget);
+    expect(find.text("Taylor's Schedule"), findsOneWidget);
+    expect(find.text('Your Schedule'), findsOneWidget);
   });
 
   testWidgets('Adding an event dispatches notification to partner',

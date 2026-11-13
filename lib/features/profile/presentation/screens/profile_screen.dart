@@ -12,7 +12,7 @@ import '../../../../shared/widgets/components/section_header.dart';
 import '../../../../shared/widgets/components/together_avatar.dart';
 import '../../../../shared/widgets/components/together_feedback.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
-import '../../../../shared/widgets/partner_switcher_badge.dart';
+import '../../../../shared/widgets/together_header.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../pairing/presentation/widgets/pairing_sheet.dart';
 
@@ -42,14 +42,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
-      appBar: AppBar(
-        title: const Row(
-          children: [
-            Text('Profile & Settings'),
-            SizedBox(width: 8),
-            PartnerSwitcherBadge(),
-          ],
-        ),
+      appBar: const TogetherHeader(
+        title: 'Profile & Settings',
+        subtitle: 'Workspace preferences & privacy',
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(

@@ -27,41 +27,8 @@ class NotificationNotifier extends StateNotifier<List<NotificationItem>> {
       }
     } catch (_) {}
 
-    // Initial realistic notification feed
-    final now = DateTime.now();
-    state = [
-      NotificationItem(
-        id: 'notif_01',
-        recipientId: 'user_alex',
-        senderId: 'user_taylor',
-        senderName: 'Taylor',
-        type: NotificationType.eventCreated,
-        title: 'New Shared Plan',
-        body: 'Taylor added "Evening Dinner & Stroll" for tonight at 7:30 PM.',
-        createdAt: now.subtract(const Duration(hours: 2)),
-      ),
-      NotificationItem(
-        id: 'notif_02',
-        recipientId: 'user_alex',
-        senderId: 'user_taylor',
-        senderName: 'Taylor',
-        type: NotificationType.statusUpdate,
-        title: 'Partner Status',
-        body: 'Taylor is currently "Free now" 🌿',
-        createdAt: now.subtract(const Duration(minutes: 45)),
-      ),
-      NotificationItem(
-        id: 'notif_03',
-        recipientId: 'user_taylor',
-        senderId: 'user_alex',
-        senderName: 'Alex',
-        type: NotificationType.eventCreated,
-        title: 'Work Sprint Scheduled',
-        body: 'Alex scheduled "Product Design Sync" for 2:00 PM today.',
-        createdAt: now.subtract(const Duration(hours: 3)),
-      ),
-    ];
-    _saveToPrefs();
+    // Clean slate with no dummy notifications
+    state = const [];
   }
 
   Future<void> _saveToPrefs() async {
@@ -100,6 +67,9 @@ class NotificationNotifier extends StateNotifier<List<NotificationItem>> {
 
     state = [item, ...state];
     _saveToPrefs();
+
+    // Trigger instant in-app notification popup
+    _ref.read(inAppNotificationBannerProvider.notifier).state = item;
   }
 
   void markAsRead(String id) {
@@ -141,3 +111,8 @@ final unreadNotificationCountProvider = Provider<int>((ref) {
       .where((n) => n.recipientId == currentUserId && !n.isRead)
       .length;
 });
+
+/// Live in-app banner provider for instant drop-down popups
+final inAppNotificationBannerProvider =
+    StateProvider<NotificationItem?>((ref) => null);
+
