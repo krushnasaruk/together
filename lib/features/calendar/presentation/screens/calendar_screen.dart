@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/components/event_timeline_tile.dart';
+import '../../../../shared/widgets/mascot/mascot_states.dart';
+import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../../shared/widgets/partner_switcher_badge.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../events/domain/models/event_model.dart';
@@ -10,6 +14,7 @@ import '../../../events/presentation/widgets/event_details_sheet.dart';
 import '../../../events/presentation/widgets/event_form_sheet.dart';
 
 /// Combined Shared Calendar screen offering Month, Week, Day, and Timeline views.
+/// Redesigned with Together's warm, clean, hand-drawn and playful Miso visual identity.
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
 
@@ -27,14 +32,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   void _previousPeriod() {
     setState(() {
       if (_selectedViewIndex == 0) {
-        // Month
         _focusedDate = DateTime(_focusedDate.year, _focusedDate.month - 1, 1);
       } else if (_selectedViewIndex == 1) {
-        // Week
         _selectedDate = _selectedDate.subtract(const Duration(days: 7));
         _focusedDate = _selectedDate;
       } else {
-        // Day
         _selectedDate = _selectedDate.subtract(const Duration(days: 1));
         _focusedDate = _selectedDate;
       }
@@ -44,14 +46,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   void _nextPeriod() {
     setState(() {
       if (_selectedViewIndex == 0) {
-        // Month
         _focusedDate = DateTime(_focusedDate.year, _focusedDate.month + 1, 1);
       } else if (_selectedViewIndex == 1) {
-        // Week
         _selectedDate = _selectedDate.add(const Duration(days: 7));
         _focusedDate = _selectedDate;
       } else {
-        // Day
         _selectedDate = _selectedDate.add(const Duration(days: 1));
         _focusedDate = _selectedDate;
       }
@@ -67,6 +66,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final allEvents = ref.watch(eventProvider);
     final auth = ref.watch(authProvider);
     final currentUserId = auth.currentUser.uid;
@@ -76,7 +76,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         : DateFormat('EEE, MMM d, yyyy').format(_selectedDate);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(
         title: const Row(
           children: [
@@ -91,20 +91,29 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             tooltip: 'Go to Today',
             onPressed: _goToToday,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppTokens.space8),
         ],
       ),
       body: Column(
         children: [
-          // View Switcher Tabs
+          // View Switcher Tabs (Warm, clean pills)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTokens.space16,
+              vertical: AppTokens.space6,
+            ),
             child: Container(
-              height: 38,
+              height: 40,
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
-                color: AppColors.surfaceSecondary,
-                borderRadius: BorderRadius.circular(10),
+                color:
+                    isDark ? AppColors.darkSurface : AppColors.surfaceSecondary,
+                borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                border: Border.all(
+                  color:
+                      isDark ? AppColors.darkDivider : AppColors.borderSubtle,
+                  width: 1,
+                ),
               ),
               child: Row(
                 children: List.generate(_viewTitles.length, (index) {
@@ -119,9 +128,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppColors.surface
+                              ? (isDark
+                                  ? const Color(0xFF38443A)
+                                  : AppColors.surface)
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius:
+                              BorderRadius.circular(AppTokens.radiusSm),
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
@@ -138,10 +150,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight:
-                                isSelected ? FontWeight.w600 : FontWeight.w400,
+                                isSelected ? FontWeight.w700 : FontWeight.w500,
                             color: isSelected
-                                ? AppColors.textPrimary
-                                : AppColors.textSecondary,
+                                ? (isDark
+                                    ? AppColors.darkPrimary
+                                    : AppColors.primaryDark)
+                                : (isDark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.textSecondary),
                           ),
                         ),
                       ),
@@ -154,24 +170,31 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
           // Date Navigator Bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTokens.space16,
+              vertical: AppTokens.space4,
+            ),
             child: Row(
               children: [
                 IconButton(
                   icon: const Icon(Icons.chevron_left_rounded),
                   onPressed: _previousPeriod,
+                  tooltip: 'Previous period',
                 ),
                 Expanded(
                   child: Center(
                     child: Text(
                       headerText,
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.chevron_right_rounded),
                   onPressed: _nextPeriod,
+                  tooltip: 'Next period',
                 ),
               ],
             ),
@@ -179,21 +202,28 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
           // Legend
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTokens.space16,
+              vertical: AppTokens.space4,
+            ),
             child: Row(
               children: [
                 _buildLegendItem('You (Alex)', AppColors.partnerSage),
-                const SizedBox(width: 14),
+                const SizedBox(width: AppTokens.space12),
                 _buildLegendItem('Partner (Taylor)', AppColors.partnerRose),
-                const SizedBox(width: 14),
+                const SizedBox(width: AppTokens.space12),
                 _buildLegendItem('Together', AppColors.togetherBlue),
                 const Spacer(),
-                const Icon(Icons.lock_outline_rounded,
-                    size: 12, color: AppColors.textTertiary),
+                const Icon(
+                  Icons.lock_outline_rounded,
+                  size: 12,
+                  color: AppColors.textTertiary,
+                ),
                 const SizedBox(width: 4),
-                const Text('Private = Busy',
-                    style:
-                        TextStyle(fontSize: 11, color: AppColors.textTertiary)),
+                const Text(
+                  'Private = Busy',
+                  style: TextStyle(fontSize: 11, color: AppColors.textTertiary),
+                ),
               ],
             ),
           ),
@@ -201,38 +231,46 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
           // Dynamic Calendar Body View
           Expanded(
-            child: _buildCurrentView(allEvents, currentUserId),
+            child: _buildCurrentView(allEvents, currentUserId, isDark),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () =>
             EventFormSheet.show(context, defaultDate: _selectedDate),
-        backgroundColor: AppColors.partnerSage,
-        foregroundColor: AppColors.textInverse,
-        elevation: 1,
+        backgroundColor: isDark ? AppColors.darkPrimary : AppColors.primaryDark,
+        foregroundColor:
+            isDark ? AppColors.darkBackground : AppColors.textInverse,
+        elevation: 2,
         child: const Icon(Icons.add_rounded),
       ),
     );
   }
 
   Widget _buildCurrentView(
-      List<CalendarEvent> allEvents, String currentUserId) {
+    List<CalendarEvent> allEvents,
+    String currentUserId,
+    bool isDark,
+  ) {
     switch (_selectedViewIndex) {
       case 0:
-        return _buildMonthView(allEvents, currentUserId);
+        return _buildMonthView(allEvents, currentUserId, isDark);
       case 1:
-        return _buildWeekView(allEvents, currentUserId);
+        return _buildWeekView(allEvents, currentUserId, isDark);
       case 2:
-        return _buildDayView(allEvents, currentUserId);
+        return _buildDayView(allEvents, currentUserId, isDark);
       case 3:
       default:
-        return _buildTimelineView(allEvents, currentUserId);
+        return _buildTimelineView(allEvents, currentUserId, isDark);
     }
   }
 
   // MONTH VIEW
-  Widget _buildMonthView(List<CalendarEvent> allEvents, String currentUserId) {
+  Widget _buildMonthView(
+    List<CalendarEvent> allEvents,
+    String currentUserId,
+    bool isDark,
+  ) {
     final firstDayOfMonth = DateTime(_focusedDate.year, _focusedDate.month, 1);
     final daysInMonth =
         DateTime(_focusedDate.year, _focusedDate.month + 1, 0).day;
@@ -258,10 +296,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 child: Center(
                   child: Text(
                     day,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -315,14 +355,24 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 margin: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppColors.partnerSageLight
+                      ? (isDark
+                          ? const Color(0xFF3B483D)
+                          : const Color(0xFFE4EDE0))
                       : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppTokens.radiusSm),
                   border: isToday
-                      ? Border.all(color: AppColors.partnerSage, width: 1.5)
+                      ? Border.all(
+                          color: isDark
+                              ? AppColors.darkPrimary
+                              : AppColors.primaryDark,
+                          width: 1.5,
+                        )
                       : (isSelected
                           ? Border.all(
-                              color: AppColors.partnerSage.withOpacity(0.5))
+                              color: isDark
+                                  ? AppColors.darkPrimary
+                                  : AppColors.primaryDark.withOpacity(0.5),
+                            )
                           : null),
                 ),
                 child: Column(
@@ -336,8 +386,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             ? FontWeight.w700
                             : FontWeight.w400,
                         color: isSelected
-                            ? AppColors.partnerSageDark
-                            : AppColors.textPrimary,
+                            ? (isDark
+                                ? AppColors.darkPrimary
+                                : AppColors.primaryDark)
+                            : (isDark
+                                ? AppColors.darkTextPrimary
+                                : AppColors.textPrimary),
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -365,33 +419,44 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             children: [
               Text(
                 'Schedule for ${DateFormat('MMMM d').format(_selectedDate)}',
-                style: Theme.of(context).textTheme.titleMedium,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
               ),
               const Spacer(),
               Text(
                 '${selectedDayEvents.length} event(s)',
-                style: const TextStyle(
-                    fontSize: 12, color: AppColors.textSecondary),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.textSecondary,
+                ),
               ),
             ],
           ),
         ),
 
         if (selectedDayEvents.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(
-              child: Text(
-                'No events scheduled for this day.',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-              ),
-            ),
+          MascotEmptyState(
+            title: 'No events scheduled',
+            message:
+                'Nothing on the calendar for this day. Enjoy your free time together!',
+            pose: MisoPose.relaxed,
+            mascotHeight: 85,
+            actionLabel: 'Add Event',
+            onAction: () =>
+                EventFormSheet.show(context, defaultDate: _selectedDate),
           )
         else
           ...selectedDayEvents.map(
             (event) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
-              child: _buildEventTile(event, currentUserId),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+              child: EventTimelineTile(
+                event: event,
+                currentUserId: currentUserId,
+                onTap: () => EventDetailsSheet.show(context, event),
+              ),
             ),
           ),
         const SizedBox(height: 30),
@@ -400,14 +465,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   // WEEK VIEW
-  Widget _buildWeekView(List<CalendarEvent> allEvents, String currentUserId) {
+  Widget _buildWeekView(
+    List<CalendarEvent> allEvents,
+    String currentUserId,
+    bool isDark,
+  ) {
     final startOfWeek =
         _selectedDate.subtract(Duration(days: _selectedDate.weekday % 7));
     final weekDays =
         List.generate(7, (i) => startOfWeek.add(Duration(days: i)));
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppTokens.space16),
       children: weekDays.map((day) {
         final isSelected = day.year == _selectedDate.year &&
             day.month == _selectedDate.month &&
@@ -421,15 +490,17 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(AppTokens.space12),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.surfaceElevated : AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
+            color: isDark ? AppColors.darkSurface : AppColors.surface,
+            borderRadius: BorderRadius.circular(AppTokens.radiusMd),
             border: Border.all(
-              color:
-                  isSelected ? AppColors.partnerSage : AppColors.borderSubtle,
+              color: isSelected
+                  ? (isDark ? AppColors.darkPrimary : AppColors.primaryDark)
+                  : (isDark ? AppColors.darkDivider : AppColors.borderSubtle),
               width: isSelected ? 1.5 : 1,
             ),
+            boxShadow: AppTokens.softShadow,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -440,23 +511,38 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     DateFormat('EEEE, MMM d').format(day),
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       color: isSelected
-                          ? AppColors.partnerSageDark
-                          : AppColors.textPrimary,
+                          ? (isDark
+                              ? AppColors.darkPrimary
+                              : AppColors.primaryDark)
+                          : (isDark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.textPrimary),
                     ),
                   ),
                   const Spacer(),
                   if (dayEvents.isEmpty)
-                    const Text('Free day',
-                        style: TextStyle(
-                            fontSize: 11, color: AppColors.textTertiary)),
+                    Text(
+                      'Free day',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.textTertiary,
+                      ),
+                    ),
                 ],
               ),
               if (dayEvents.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                ...dayEvents
-                    .map((event) => _buildEventTile(event, currentUserId)),
+                ...dayEvents.map(
+                  (event) => EventTimelineTile(
+                    event: event,
+                    currentUserId: currentUserId,
+                    onTap: () => EventDetailsSheet.show(context, event),
+                  ),
+                ),
               ],
             ],
           ),
@@ -466,7 +552,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   // DAY VIEW (Timeline Hour Slots & Overlaps)
-  Widget _buildDayView(List<CalendarEvent> allEvents, String currentUserId) {
+  Widget _buildDayView(
+    List<CalendarEvent> allEvents,
+    String currentUserId,
+    bool isDark,
+  ) {
     final dayEvents = allEvents.where((e) {
       return e.startTime.year == _selectedDate.year &&
           e.startTime.month == _selectedDate.month &&
@@ -498,22 +588,28 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   timeStr,
-                  style: const TextStyle(
-                      fontSize: 11, color: AppColors.textTertiary),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.textTertiary,
+                  ),
                 ),
               ),
             ),
             Expanded(
               child: Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(AppTokens.space8),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(10),
+                  color: isDark ? AppColors.darkSurface : AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppTokens.radiusMd),
                   border: Border.all(
                     color: hasOverlap
-                        ? AppColors.partnerRoseLight
-                        : AppColors.borderSubtle,
+                        ? AppColors.error
+                        : (isDark
+                            ? AppColors.darkDivider
+                            : AppColors.borderSubtle),
                     width: hasOverlap ? 1.5 : 1,
                   ),
                 ),
@@ -533,22 +629,30 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               padding: EdgeInsets.only(bottom: 6),
                               child: Row(
                                 children: [
-                                  Icon(Icons.warning_amber_rounded,
-                                      size: 13,
-                                      color: AppColors.statusTentative),
+                                  Icon(
+                                    Icons.warning_amber_rounded,
+                                    size: 13,
+                                    color: AppColors.statusTentative,
+                                  ),
                                   SizedBox(width: 4),
                                   Text(
                                     'Schedule Overlap / Coinciding commitments',
                                     style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.statusTentative),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.statusTentative,
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                          ...slotEvents
-                              .map((e) => _buildEventTile(e, currentUserId)),
+                          ...slotEvents.map(
+                            (e) => EventTimelineTile(
+                              event: e,
+                              currentUserId: currentUserId,
+                              onTap: () => EventDetailsSheet.show(context, e),
+                            ),
+                          ),
                         ],
                       ),
               ),
@@ -561,108 +665,33 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   // TIMELINE VIEW
   Widget _buildTimelineView(
-      List<CalendarEvent> allEvents, String currentUserId) {
+    List<CalendarEvent> allEvents,
+    String currentUserId,
+    bool isDark,
+  ) {
     final sorted = List<CalendarEvent>.from(allEvents)
       ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
+    if (sorted.isEmpty) {
+      return const MascotEmptyState(
+        title: 'Timeline is clear',
+        message: 'No events scheduled on either calendar.',
+        pose: MisoPose.sleeping,
+      );
+    }
+
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: sorted.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 6),
       itemBuilder: (context, index) {
         final event = sorted[index];
-        return _buildEventTile(event, currentUserId);
+        return EventTimelineTile(
+          event: event,
+          currentUserId: currentUserId,
+          onTap: () => EventDetailsSheet.show(context, event),
+        );
       },
-    );
-  }
-
-  Widget _buildEventTile(CalendarEvent event, String currentUserId) {
-    final isMasked = event.isMaskedFor(currentUserId);
-    final title = event.displayTitleFor(currentUserId);
-    final location = event.displayLocationFor(currentUserId);
-    final timeStr =
-        '${DateFormat('h:mm a').format(event.startTime)} - ${DateFormat('h:mm a').format(event.endTime)}';
-
-    final partnerColor = event.ownerId == 'user_alex'
-        ? AppColors.partnerSage
-        : (event.ownerId == 'user_taylor'
-            ? AppColors.partnerRose
-            : AppColors.togetherBlue);
-
-    return InkWell(
-      onTap: () => EventDetailsSheet.show(context, event),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.borderSubtle),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 4,
-              height: 34,
-              decoration: BoxDecoration(
-                color: isMasked ? AppColors.textTertiary : partnerColor,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            fontStyle:
-                                isMasked ? FontStyle.italic : FontStyle.normal,
-                            color: isMasked
-                                ? AppColors.textSecondary
-                                : AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                      if (isMasked)
-                        const Icon(Icons.lock_outline_rounded,
-                            size: 13, color: AppColors.textTertiary),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Text(
-                        timeStr,
-                        style: const TextStyle(
-                            fontSize: 11, color: AppColors.textSecondary),
-                      ),
-                      if (location != null) ...[
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '• $location',
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 11, color: AppColors.textTertiary),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -684,7 +713,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           style: const TextStyle(
             fontSize: 11,
             color: AppColors.textSecondary,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],

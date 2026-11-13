@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../core/theme/theme_provider.dart';
+import '../../../../shared/widgets/components/section_header.dart';
+import '../../../../shared/widgets/components/together_avatar.dart';
+import '../../../../shared/widgets/components/together_feedback.dart';
+import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../../shared/widgets/partner_switcher_badge.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../pairing/presentation/widgets/pairing_sheet.dart';
 
 /// Interactive Profile & Settings screen.
+/// Redesigned with Together's warm, calm, functional and friendly Miso visual identity.
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -22,13 +29,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final auth = ref.watch(authProvider);
     final user = auth.currentUser;
     final couple = auth.couple;
     final partnerColor = user.themeColor;
+    final currentThemeMode = ref.watch(themeModeProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(
         title: const Row(
           children: [
@@ -39,95 +48,112 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTokens.space16,
+          vertical: AppTokens.space12,
+        ),
         children: [
-          // Active User Card
+          // Active User Card with Miso Identity
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppTokens.space16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.borderSubtle),
+              color: isDark ? AppColors.darkSurface : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+              border: Border.all(
+                color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
+                width: 1,
+              ),
+              boxShadow: AppTokens.softShadow,
             ),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 26,
-                  backgroundColor: partnerColor.withOpacity(0.18),
-                  child: Text(
-                    user.displayName[0],
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: partnerColor,
-                    ),
-                  ),
+                TogetherAvatar(
+                  name: user.displayName,
+                  size: 52,
+                  borderColor: partnerColor,
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppTokens.space16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         user.displayName,
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         user.email,
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.textSecondary,
+                            ),
                       ),
                     ],
                   ),
                 ),
-                ElevatedButton.icon(
+                OutlinedButton.icon(
                   onPressed: () {
                     ref.read(authProvider.notifier).switchPartner();
+                    TogetherFeedback.showToast(
+                      context,
+                      message: 'Switched persona to partner',
+                      pose: MisoPose.wave,
+                    );
                   },
                   icon: const Icon(Icons.swap_horiz_rounded, size: 16),
                   label: const Text('Switch', style: TextStyle(fontSize: 12)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: partnerColor,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(80, 36),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppTokens.space20),
 
           // Couple Workspace Section
-          Text(
-            'Couple Workspace',
-            style: Theme.of(context).textTheme.titleLarge,
+          const SectionHeader(
+            title: 'Couple Workspace',
+            subtitle: 'Pairing and shared life connection',
+            padding: EdgeInsets.only(bottom: AppTokens.space8),
           ),
-          const SizedBox(height: 10),
           InkWell(
             onTap: () => PairingSheet.show(context),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppTokens.radiusMd),
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppTokens.space16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderSubtle),
+                color: isDark ? AppColors.darkSurface : AppColors.surface,
+                borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                border: Border.all(
+                  color:
+                      isDark ? AppColors.darkDivider : AppColors.borderSubtle,
+                  width: 1,
+                ),
+                boxShadow: AppTokens.softShadow,
               ),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: const BoxDecoration(
-                      color: AppColors.partnerRoseLight,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF382A2A)
+                          : AppColors.partnerRoseLight,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.favorite_rounded,
                       color: AppColors.partnerRose,
-                      size: 22,
+                      size: 20,
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: AppTokens.space12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,40 +162,119 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           auth.isPaired
                               ? 'Paired with ${user.partnerName ?? "Partner"}'
                               : 'Unpaired Workspace',
-                          style: Theme.of(context).textTheme.titleMedium,
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           auth.isPaired
                               ? 'Workspace ID: ${couple?.id ?? "couple_workspace_01"}'
-                              : 'Tap to generate invite code or enter partner code',
-                          style: Theme.of(context).textTheme.bodySmall,
+                              : 'Tap to generate invite code or pair',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.textSecondary,
+                                  ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.chevron_right_rounded,
-                    color: AppColors.textTertiary,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.textTertiary,
                     size: 22,
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTokens.space20),
 
-          // Notification Preferences
-          Text(
-            'Notification Preferences',
-            style: Theme.of(context).textTheme.titleLarge,
+          // Appearance & Theme Mode (Light / Dark Mode)
+          const SectionHeader(
+            title: 'Appearance',
+            subtitle: 'Choose between warm light and cozy dark mode',
+            padding: EdgeInsets.only(bottom: AppTokens.space8),
           ),
-          const SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.borderSubtle),
+              color: isDark ? AppColors.darkSurface : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+              border: Border.all(
+                color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                RadioListTile<ThemeMode>(
+                  title: const Text('Light Mode (Warm Cream)',
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  value: ThemeMode.light,
+                  groupValue: currentThemeMode,
+                  activeColor:
+                      isDark ? AppColors.darkPrimary : AppColors.primaryDark,
+                  onChanged: (val) {
+                    if (val != null) {
+                      ref.read(themeModeProvider.notifier).setThemeMode(val);
+                    }
+                  },
+                ),
+                const Divider(),
+                RadioListTile<ThemeMode>(
+                  title: const Text('Dark Mode (Warm Charcoal)',
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  value: ThemeMode.dark,
+                  groupValue: currentThemeMode,
+                  activeColor:
+                      isDark ? AppColors.darkPrimary : AppColors.primaryDark,
+                  onChanged: (val) {
+                    if (val != null) {
+                      ref.read(themeModeProvider.notifier).setThemeMode(val);
+                    }
+                  },
+                ),
+                const Divider(),
+                RadioListTile<ThemeMode>(
+                  title: const Text('System Default',
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  value: ThemeMode.system,
+                  groupValue: currentThemeMode,
+                  activeColor:
+                      isDark ? AppColors.darkPrimary : AppColors.primaryDark,
+                  onChanged: (val) {
+                    if (val != null) {
+                      ref.read(themeModeProvider.notifier).setThemeMode(val);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppTokens.space20),
+
+          // Notification Preferences
+          const SectionHeader(
+            title: 'Notification Preferences',
+            subtitle: 'Control which partner alerts you receive',
+            padding: EdgeInsets.only(bottom: AppTokens.space8),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurface : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+              border: Border.all(
+                color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
+                width: 1,
+              ),
             ),
             child: Column(
               children: [
@@ -181,7 +286,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       'Receive push alerts when partner schedules events',
                       style: TextStyle(
                           fontSize: 12, color: AppColors.textSecondary)),
-                  activeColor: AppColors.partnerSage,
+                  activeColor:
+                      isDark ? AppColors.darkPrimary : AppColors.primaryDark,
                   value: _notifyOnCreated,
                   onChanged: (val) => setState(() => _notifyOnCreated = val),
                 ),
@@ -194,7 +300,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       'Get notified when partner reschedules or changes plans',
                       style: TextStyle(
                           fontSize: 12, color: AppColors.textSecondary)),
-                  activeColor: AppColors.partnerSage,
+                  activeColor:
+                      isDark ? AppColors.darkPrimary : AppColors.primaryDark,
                   value: _notifyOnUpdated,
                   onChanged: (val) => setState(() => _notifyOnUpdated = val),
                 ),
@@ -207,63 +314,65 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       'Receive notifications for "On my way", "Free now", etc.',
                       style: TextStyle(
                           fontSize: 12, color: AppColors.textSecondary)),
-                  activeColor: AppColors.partnerSage,
+                  activeColor:
+                      isDark ? AppColors.darkPrimary : AppColors.primaryDark,
                   value: _notifyOnStatus,
                   onChanged: (val) => setState(() => _notifyOnStatus = val),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTokens.space20),
 
           // Privacy & Event Defaults
-          Text(
-            'Privacy & Visibility',
-            style: Theme.of(context).textTheme.titleLarge,
+          const SectionHeader(
+            title: 'Privacy & Visibility',
+            subtitle: 'Default event visibility settings',
+            padding: EdgeInsets.only(bottom: AppTokens.space8),
           ),
-          const SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.borderSubtle),
+              color: isDark ? AppColors.darkSurface : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+              border: Border.all(
+                color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
+                width: 1,
+              ),
             ),
-            child: Column(
-              children: [
-                SwitchListTile(
-                  title: const Text('Default New Events to Private',
-                      style:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                  subtitle: const Text(
-                      'Partner only sees "Busy" unless explicitly marked as shared',
-                      style: TextStyle(
-                          fontSize: 12, color: AppColors.textSecondary)),
-                  activeColor: AppColors.partnerSage,
-                  value: _defaultPrivate,
-                  onChanged: (val) => setState(() => _defaultPrivate = val),
-                ),
-              ],
+            child: SwitchListTile(
+              title: const Text('Default New Events to Private',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              subtitle: const Text(
+                  'Partner only sees "Busy" unless explicitly marked as shared',
+                  style:
+                      TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              activeColor:
+                  isDark ? AppColors.darkPrimary : AppColors.primaryDark,
+              value: _defaultPrivate,
+              onChanged: (val) => setState(() => _defaultPrivate = val),
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: AppTokens.space20),
 
-          // Account Management / Data
-          Text(
-            'Account & Diagnostics',
-            style: Theme.of(context).textTheme.titleLarge,
+          // Account Management & Diagnostics
+          const SectionHeader(
+            title: 'Account & Diagnostics',
+            subtitle: 'Session reset and data integrity',
+            padding: EdgeInsets.only(bottom: AppTokens.space8),
           ),
-          const SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.borderSubtle),
+              color: isDark ? AppColors.darkSurface : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+              border: Border.all(
+                color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
+                width: 1,
+              ),
             ),
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.refresh_rounded,
-                      size: 20, color: AppColors.textPrimary),
+                  leading: const Icon(Icons.refresh_rounded, size: 20),
                   title: const Text('Reset Demo Data',
                       style:
                           TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
@@ -272,19 +381,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       style: TextStyle(
                           fontSize: 12, color: AppColors.textSecondary)),
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content:
-                            Text('Demo schedules and initial data refreshed.'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
+                    TogetherFeedback.showToast(
+                      context,
+                      message: 'Demo schedules and initial data refreshed!',
+                      pose: MisoPose.happy,
                     );
                   },
                 ),
                 const Divider(),
                 const ListTile(
                   leading: Icon(Icons.shield_outlined,
-                      size: 20, color: AppColors.statusConfirmed),
+                      size: 20, color: AppColors.success),
                   title: Text('Security & Data Isolation Active',
                       style:
                           TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
@@ -292,12 +399,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       style: TextStyle(
                           fontSize: 12, color: AppColors.textSecondary)),
                   trailing: Icon(Icons.check_circle_rounded,
-                      color: AppColors.statusConfirmed, size: 18),
+                      color: AppColors.success, size: 18),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTokens.space24),
 
           // Account Actions (Sign Out & Delete Account)
           OutlinedButton.icon(
@@ -307,46 +414,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               context.go('/welcome');
             },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTokens.space12),
           TextButton.icon(
             icon: const Icon(Icons.delete_forever_rounded,
-                size: 18, color: AppColors.statusCancelled),
+                size: 18, color: AppColors.error),
             label: const Text(
               'Delete Account & Data',
-              style: TextStyle(color: AppColors.statusCancelled, fontSize: 13),
+              style: TextStyle(color: AppColors.error, fontSize: 13),
             ),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  backgroundColor: AppColors.surface,
-                  title: const Text('Delete Account?'),
-                  content: const Text(
+            onPressed: () async {
+              final confirmed = await TogetherFeedback.showDialog(
+                context,
+                title: 'Delete Account?',
+                message:
                     'This action is irreversible. All your personal events will be deleted. '
-                    'Your partner will remain in Together with their own personal schedule intact.',
-                    style: TextStyle(fontSize: 13),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(),
-                      child: const Text('Cancel'),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.statusCancelled),
-                      onPressed: () {
-                        Navigator.of(ctx).pop();
-                        context.go('/welcome');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Account successfully removed.')),
-                        );
-                      },
-                      child: const Text('Confirm Deletion'),
-                    ),
-                  ],
-                ),
+                    'Your partner will remain in Together with their personal schedule intact.',
+                pose: MisoPose.confused,
+                confirmLabel: 'Confirm Deletion',
+                isDestructive: true,
               );
+
+              if (confirmed == true && context.mounted) {
+                context.go('/welcome');
+                TogetherFeedback.showToast(
+                  context,
+                  message: 'Account successfully removed.',
+                  pose: MisoPose.reassuring,
+                );
+              }
             },
           ),
           const SizedBox(height: 40),

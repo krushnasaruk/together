@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../shared/widgets/mascot/mascot_states.dart';
+import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../providers/notification_provider.dart';
 
@@ -38,9 +40,9 @@ class NotificationsSheet extends ConsumerWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         top: false,
@@ -85,33 +87,12 @@ class NotificationsSheet extends ConsumerWidget {
             const Divider(),
             Expanded(
               child: notifications.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: const BoxDecoration(
-                              color: AppColors.surfaceSecondary,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.notifications_none_rounded,
-                              size: 32,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'All caught up',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Notifications from your partner will appear here.',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
+                  ? const Center(
+                      child: MascotEmptyState(
+                        title: 'All caught up',
+                        message: 'No new updates from your partner right now.',
+                        pose: MisoPose.sleeping,
+                        mascotHeight: 85,
                       ),
                     )
                   : ListView.separated(

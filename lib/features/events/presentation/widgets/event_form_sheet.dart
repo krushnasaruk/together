@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../shared/widgets/components/together_feedback.dart';
+import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../domain/models/event_model.dart';
 import '../providers/event_provider.dart';
@@ -191,11 +193,10 @@ class _EventFormSheetState extends ConsumerState<EventFormSheet> {
       );
     } else {
       ref.read(eventProvider.notifier).addEvent(event);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Event scheduled & synchronized with partner.'),
-          behavior: SnackBarBehavior.floating,
-        ),
+      TogetherFeedback.showToast(
+        context,
+        message: 'Event scheduled & synchronized with partner.',
+        pose: MisoPose.celebrating,
       );
     }
 
@@ -212,9 +213,9 @@ class _EventFormSheetState extends ConsumerState<EventFormSheet> {
         maxHeight: MediaQuery.of(context).size.height * 0.88,
       ),
       margin: EdgeInsets.only(bottom: keyboardBottom),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         top: false,

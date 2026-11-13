@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../shared/widgets/components/together_feedback.dart';
+import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../notifications/domain/models/notification_model.dart';
 import '../providers/status_provider.dart';
 
@@ -40,12 +42,11 @@ class _StatusPickerSheetState extends ConsumerState<StatusPickerSheet> {
         );
 
     Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-            'Status updated: ${_selectedPreset.title} ${_selectedPreset.emoji}'),
-        behavior: SnackBarBehavior.floating,
-      ),
+    TogetherFeedback.showToast(
+      context,
+      message:
+          'Status broadcasted: ${_selectedPreset.title} ${_selectedPreset.emoji}',
+      pose: MisoPose.wave,
     );
   }
 
@@ -58,9 +59,9 @@ class _StatusPickerSheetState extends ConsumerState<StatusPickerSheet> {
         maxHeight: MediaQuery.of(context).size.height * 0.8,
       ),
       margin: EdgeInsets.only(bottom: keyboardBottom),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         top: false,

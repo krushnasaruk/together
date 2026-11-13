@@ -51,13 +51,40 @@
 - **Milestone 6**: Implemented Together space featuring anniversary milestone tracking, date night ideas generator, and shared romantic bucket list with instant updates.
 - **Milestone 7 & 8**: Implemented local persistence with `SharedPreferences`, availability calculation engine, Firebase Cloud Functions TypeScript scaffolding, production auth screens (Login, Register, Welcome, Forgot Password), and full documentation suite (`PRODUCT_SPECIFICATION.md`, `FEATURES.md`, `SECURITY.md`, `TESTING_STRATEGY.md`, `DECISIONS.md`).
 
-### Phase F: Final Quality Assurance & Verification
-- **Unit Testing**: Executed `test/unit/availability_test.dart` verifying free window calculations, boundary conditions, privacy masking exclusions, and overlapping event intervals.
+### Phase F: Quality Assurance & Domain Tests
+- **Unit Testing**: Executed `test/unit/availability_test.dart`, `test/unit/event_model_test.dart`, and `test/unit/couple_and_status_test.dart` verifying free window calculations, boundary conditions, privacy masking exclusions, and overlapping event intervals.
 - **Widget Testing**: Executed `test/widget_test.dart` verifying app startup, 1-tap persona switching, strict privacy masking assertions, 4-tab shell navigation, and partner notification dispatch upon event creation.
-- **Test Pass Rate**: 8/8 tests passed (100%).
+- **Test Pass Rate**: 15/15 tests passed (100%).
 - **Lint & Static Analysis**: `flutter analyze` completed with 0 errors, 0 warnings, 0 infos.
-- **Code Formatting**: `dart format .` validated 41 files cleanly formatted.
-- **Web Production Build**: `flutter build web --no-tree-shake-icons` compiled cleanly in 70.5s to `build/web`.
+- **Code Formatting**: `dart format .` validated all files cleanly formatted.
 
-- **Milestone 6**: Implemented Together space featuring an anniversary day counter, milestone tracker, curated & custom date night plans, and shared romantic bucket list with checkboxes.
-- **Milestone 7 & 8**: Implemented local persistence with `SharedPreferences`, responsive layouts, zero analysis issues, and automated widget & privacy tests.
+### Phase G: Complete Visual Identity & UI/UX Redesign (Miso the Cat Mascot)
+- **Mascot Asset Extraction & Processing**:
+  - Processed the official mascot character sprite sheet (`assets/mascot/`) extracting 12 transparent PNG assets (`miso_default`, `miso_happy`, `miso_wave`, `miso_curious`, `miso_message`, `miso_sleeping`, `miso_celebrating`, `miso_confused`, `miso_reassuring`, `miso_relaxed`, `miso_avatar`, `miso_monochrome`).
+  - Added feathered anti-aliasing and zero-halo alpha boundaries.
+  - Registered `assets/mascot/` in `pubspec.yaml`.
+- **Centralized Design System & Tokens**:
+  - Light palette: Background `#F8F6F0`, Surface `#FFFFFF`, Primary `#A8B99F` (Muted Sage), Primary dark `#536B54`, Secondary `#E8B9B0` (Subdued Rose), Accent Blue `#C4D8DF`, Lavender `#D8CEE5`, Sand `#E8DDCA`, Text Primary `#343A36`, Text Secondary `#85877F`, Divider `#E8E5DC`.
+  - Dark palette: Warm charcoal `#1F2220`, Lighter charcoal `#2A2E2B`, Muted sage `#8EA885`, Subdued blush `#D99B90`, Soft warm white `#F0EFEA`, Accessible muted grey `#A5A9A4`, Dark divider `#3A3F3B`.
+  - Typography: Nunito Sans for expressive headings & titles, DM Sans for body and interface text, tabular figures for schedule clock times.
+  - Spacing & Radii: Defined `AppTokens` and micro-motion curves `AppMotion`.
+  - Theme Mode: Implemented `themeModeProvider` with persistent light/dark/system mode selection in Profile.
+- **Global Component Library**:
+  - `TogetherMascot`: Animated interactive cat widget with 12 poses, micro-bounce on tap, and screen-reader accessibility labels.
+  - `MascotMessage`: Friendly speech bubble for contextual tips.
+  - `MascotEmptyState` & `MascotErrorState`: Warm empty states with Miso resting/curious.
+  - `TogetherButton` & `TogetherIconButton`: Responsive press-scale feedback.
+  - `TogetherFeedback`: Unified toast and adaptive dialog popups featuring Miso.
+  - `EventTimelineTile`: Unified event card across Today and Calendar timelines with privacy masking and tabular clock times.
+  - `SectionHeader`, `TogetherAvatar`, `TogetherSkeleton`.
+- **Screen Redesigns**:
+  - **Today Screen**: Features Miso avatar and gentle dismissible session greeting, partner overview card, potential time together banner, partner schedule with sleeping Miso empty state, and personal schedule.
+  - **Calendar Screen**: Clean 4-way view selector (Month, Week, Day, Timeline) with light/dark theme support, schedule overlap banners, and empty state illustrations.
+  - **Together Screen**: Redesigned milestone banner with Miso love letter, date night ideas, and celebratory Miso reactions when checking off shared bucket list items.
+  - **Profile Screen**: Clean settings groups, theme selector (Light/Dark/System), partner pairing details, and account safety dialogs.
+  - **Authentication Screens**: Welcome screen hero with waving Miso, Sign in, Create Account, and Password recovery with message-carrying Miso.
+- **Full Verification**:
+  - `flutter analyze`: 0 issues found.
+  - `dart format .`: 53 files formatted cleanly.
+  - `flutter test`: 15/15 tests passed.
+  - `flutter build web`: Clean production build in 87.8s.

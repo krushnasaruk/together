@@ -2,76 +2,89 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/mascot/together_mascot.dart';
 
-/// Warm, human welcome & onboarding screen for Together.
+/// Warm, playful, friendly welcome & onboarding screen featuring Miso.
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTokens.space24,
+            vertical: AppTokens.space20,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Spacer(),
-              // Brand Icon
-              Container(
-                width: 72,
-                height: 72,
-                decoration: const BoxDecoration(
-                  color: AppColors.partnerSageLight,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.favorite_rounded,
-                  color: AppColors.partnerSage,
-                  size: 36,
-                ),
+              // Miso Waving Mascot Hero
+              const TogetherMascot(
+                pose: MisoPose.wave,
+                height: 140,
+                animateOnTap: true,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTokens.space20),
 
               // Title & Tagline
               Text(
                 AppConstants.appName,
                 style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: AppColors.textPrimary,
-                      letterSpacing: -1.2,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -1.0,
                     ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTokens.space6),
               Text(
                 AppConstants.appTagline,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary,
                     ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: AppTokens.space24),
 
               // Value Proposition Pill
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTokens.space16,
+                  vertical: AppTokens.space12,
+                ),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.borderSubtle),
+                  color: isDark ? AppColors.darkSurface : AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                  border: Border.all(
+                    color:
+                        isDark ? AppColors.darkDivider : AppColors.borderSubtle,
+                    width: 1,
+                  ),
+                  boxShadow: AppTokens.softShadow,
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.shield_outlined,
-                        size: 20, color: AppColors.partnerSage),
-                    const SizedBox(width: 12),
+                    Icon(
+                      Icons.shield_outlined,
+                      size: 20,
+                      color: isDark
+                          ? AppColors.darkPrimary
+                          : AppColors.primaryDark,
+                    ),
+                    const SizedBox(width: AppTokens.space12),
                     Expanded(
                       child: Text(
                         'Private by default. Shared understanding without surveillance.',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textPrimary,
                               fontWeight: FontWeight.w500,
+                              height: 1.4,
                             ),
                       ),
                     ),
@@ -80,32 +93,43 @@ class WelcomeScreen extends StatelessWidget {
               ),
               const Spacer(),
 
-              // Actions
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => context.push('/login'),
-                  child: const Text('Sign In'),
+              // Primary Actions
+              ElevatedButton(
+                onPressed: () => context.push('/register'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      isDark ? AppColors.darkPrimary : AppColors.primaryDark,
+                  foregroundColor:
+                      isDark ? AppColors.darkBackground : AppColors.textInverse,
+                  minimumSize:
+                      const Size(double.infinity, AppTokens.buttonHeightLg),
                 ),
+                child: const Text('Create Two-Person Space'),
               ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => context.push('/register'),
-                  child: const Text('Create an Account'),
+              const SizedBox(height: AppTokens.space12),
+              OutlinedButton(
+                onPressed: () => context.push('/login'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize:
+                      const Size(double.infinity, AppTokens.buttonHeightLg),
                 ),
+                child: const Text('Sign In to Account'),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTokens.space12),
+
+              // Quick Demo Entry
               TextButton(
                 onPressed: () => context.go('/today'),
-                child: const Text(
-                  'Continue with Demo Workspace',
-                  style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                child: Text(
+                  'Explore Demo Workspace with Miso',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color:
+                        isDark ? AppColors.darkPrimary : AppColors.primaryDark,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
             ],
           ),
         ),

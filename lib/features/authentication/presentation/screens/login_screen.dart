@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../providers/auth_provider.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/components/together_buttons.dart';
+import '../../../../shared/widgets/components/together_feedback.dart';
+import '../../../../shared/widgets/mascot/together_mascot.dart';
 
 /// Production-ready Login Screen with client-side validation and session initialization.
+/// Redesigned with Together's warm, clean Miso visual identity.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -31,24 +35,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     setState(() => _isLoading = true);
     // Simulate auth verification or emulator login
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 500));
 
     if (mounted) {
       setState(() => _isLoading = false);
       context.go('/today');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Welcome back to Together.'),
-          behavior: SnackBarBehavior.floating,
-        ),
+      TogetherFeedback.showToast(
+        context,
+        message: 'Welcome back to Together!',
+        pose: MisoPose.happy,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -59,18 +64,48 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTokens.space24,
+              vertical: AppTokens.space12,
+            ),
             children: [
-              Text(
-                'Welcome Back',
-                style: Theme.of(context).textTheme.displaySmall,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Welcome Back',
+                          style: Theme.of(context)
+                              .textTheme
+                              .displaySmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Sign in to coordinate your everyday lives together.',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.textSecondary,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const TogetherMascot(
+                    pose: MisoPose.relaxed,
+                    height: 64,
+                    width: 64,
+                  ),
+                ],
               ),
-              const SizedBox(height: 6),
-              Text(
-                'Sign in to coordinate your everyday lives together.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 28),
+              const SizedBox(height: AppTokens.space28),
 
               // Email Field
               TextFormField(
@@ -78,20 +113,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
                   labelText: 'Email Address',
-                  hintText: 'alex@together.app',
-                  prefixIcon: Icon(Icons.email_outlined, size: 20),
+                  hintText: 'partner@example.com',
+                  prefixIcon: Icon(Icons.mail_outline_rounded, size: 20),
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
                     return 'Please enter your email';
                   }
                   if (!val.contains('@') || !val.contains('.')) {
-                    return 'Please enter a valid email address';
+                    return 'Enter a valid email address';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTokens.space16),
 
               // Password Field
               TextFormField(
@@ -103,8 +138,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                       size: 20,
                     ),
                     onPressed: () =>
@@ -121,61 +156,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTokens.space8),
 
               // Forgot Password Link
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () => context.push('/forgot-password'),
-                  child: const Text('Forgot password?'),
+                  child: Text(
+                    'Forgot Password?',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark
+                          ? AppColors.darkPrimary
+                          : AppColors.primaryDark,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTokens.space20),
 
-              // Submit Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleLogin,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Text('Sign In'),
-                ),
+              // Sign In Button
+              TogetherButton(
+                label: 'Sign In',
+                onPressed: _handleLogin,
+                isLoading: _isLoading,
+                expanded: true,
+                height: AppTokens.buttonHeightLg,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTokens.space16),
 
-              // Sign Up Navigation
+              // Register Link
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Do not have an account? ',
-                      style: TextStyle(fontSize: 13)),
+                  Text(
+                    "Don't have an account?",
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary,
+                    ),
+                  ),
                   TextButton(
                     onPressed: () => context.push('/register'),
-                    child: const Text('Create Account'),
+                    child: Text(
+                      'Create one',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark
+                            ? AppColors.darkPrimary
+                            : AppColors.primaryDark,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 24),
-
-              // Quick Persona Sign-in
-              const Divider(),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.people_outline_rounded, size: 18),
-                label: const Text('Demo Sign-In (Alex & Taylor)'),
-                onPressed: () {
-                  ref
-                      .read(authProvider.notifier)
-                      .setUser(ref.read(authProvider).currentUser);
-                  context.go('/today');
-                },
               ),
             ],
           ),

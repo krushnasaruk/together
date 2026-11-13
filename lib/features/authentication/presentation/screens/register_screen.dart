@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/components/together_buttons.dart';
+import '../../../../shared/widgets/components/together_feedback.dart';
+import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../domain/models/user_model.dart';
 import '../providers/auth_provider.dart';
 
 /// Production-ready Registration Screen enforcing input validation and account creation.
+/// Redesigned with Together's warm, clean Miso visual identity.
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
@@ -36,7 +41,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 500));
 
     if (mounted) {
       final newUser = UserModel(
@@ -53,19 +58,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       setState(() => _isLoading = false);
 
       context.go('/today');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Account created! Pair with your partner in Profile.'),
-          behavior: SnackBarBehavior.floating,
-        ),
+      TogetherFeedback.showToast(
+        context,
+        message: 'Account created! Pair with your partner in Profile.',
+        pose: MisoPose.happy,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -76,25 +82,56 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTokens.space24,
+              vertical: AppTokens.space12,
+            ),
             children: [
-              Text(
-                'Create Your Account',
-                style: Theme.of(context).textTheme.displaySmall,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Create Your Account',
+                          style: Theme.of(context)
+                              .textTheme
+                              .displaySmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Join Together to create your private two-person shared space.',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.textSecondary,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const TogetherMascot(
+                    pose: MisoPose.curious,
+                    height: 64,
+                    width: 64,
+                  ),
+                ],
               ),
-              const SizedBox(height: 6),
-              Text(
-                'Each partner maintains their own individual account.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTokens.space24),
 
-              // Full Name
+              // Name Field
               TextFormField(
                 controller: _nameController,
+                textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   labelText: 'Your Name',
-                  hintText: 'e.g. Alex Rivers',
+                  hintText: 'e.g. Alex',
                   prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
                 ),
                 validator: (val) {
@@ -104,42 +141,41 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTokens.space16),
 
-              // Email
+              // Email Field
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
                   labelText: 'Email Address',
-                  hintText: 'name@example.com',
-                  prefixIcon: Icon(Icons.email_outlined, size: 20),
+                  hintText: 'partner@example.com',
+                  prefixIcon: Icon(Icons.mail_outline_rounded, size: 20),
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
                     return 'Please enter your email';
                   }
                   if (!val.contains('@') || !val.contains('.')) {
-                    return 'Please enter a valid email address';
+                    return 'Enter a valid email address';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTokens.space16),
 
-              // Password
+              // Password Field
               TextFormField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  hintText: 'Minimum 8 characters',
                   prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                       size: 20,
                     ),
                     onPressed: () =>
@@ -150,15 +186,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   if (val == null || val.isEmpty) {
                     return 'Please enter a password';
                   }
-                  if (val.length < 8) {
-                    return 'Password must be at least 8 characters';
+                  if (val.length < 6) {
+                    return 'Password must be at least 6 characters';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTokens.space16),
 
-              // Confirm Password
+              // Confirm Password Field
               TextFormField(
                 controller: _confirmPasswordController,
                 obscureText: _obscurePassword,
@@ -173,34 +209,43 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTokens.space24),
 
-              // Submit Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleRegister,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Text('Create Account'),
-                ),
+              // Register Button
+              TogetherButton(
+                label: 'Create Account',
+                onPressed: _handleRegister,
+                isLoading: _isLoading,
+                expanded: true,
+                height: AppTokens.buttonHeightLg,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTokens.space16),
 
-              // Sign In Navigation
+              // Sign in Link
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Already have an account? ',
-                      style: TextStyle(fontSize: 13)),
+                  Text(
+                    'Already have an account?',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary,
+                    ),
+                  ),
                   TextButton(
-                    onPressed: () => context.pop(),
-                    child: const Text('Sign In'),
+                    onPressed: () => context.push('/login'),
+                    child: Text(
+                      'Sign in',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark
+                            ? AppColors.darkPrimary
+                            : AppColors.primaryDark,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ],
               ),

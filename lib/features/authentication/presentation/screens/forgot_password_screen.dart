@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/components/together_buttons.dart';
+import '../../../../shared/widgets/mascot/together_mascot.dart';
 
 /// Password recovery screen providing neutral confirmation feedback.
+/// Redesigned with Together's warm, clean Miso visual identity.
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -28,8 +32,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -38,29 +44,57 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: _submitted ? _buildConfirmationView() : _buildFormView(),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTokens.space24,
+            vertical: AppTokens.space16,
+          ),
+          child: _submitted
+              ? _buildConfirmationView(isDark)
+              : _buildFormView(isDark),
         ),
       ),
     );
   }
 
-  Widget _buildFormView() {
+  Widget _buildFormView(bool isDark) {
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Reset Password',
-            style: Theme.of(context).textTheme.displaySmall,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Reset Password',
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Enter your registered email and Miso will prepare a secure password reset link.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.textSecondary,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const TogetherMascot(
+                pose: MisoPose.reassuring,
+                height: 64,
+                width: 64,
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Enter your registered email address and we will send you a secure password reset link.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 28),
+          const SizedBox(height: AppTokens.space28),
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
@@ -74,61 +108,63 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 return 'Please enter your email';
               }
               if (!val.contains('@') || !val.contains('.')) {
-                return 'Please enter a valid email address';
+                return 'Enter a valid email address';
               }
               return null;
             },
           ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _handleSubmit,
-              child: const Text('Send Reset Link'),
-            ),
+          const SizedBox(height: AppTokens.space24),
+          TogetherButton(
+            label: 'Send Reset Instructions',
+            onPressed: _handleSubmit,
+            expanded: true,
+            height: AppTokens.buttonHeightLg,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildConfirmationView() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: const BoxDecoration(
-            color: AppColors.partnerSageLight,
-            shape: BoxShape.circle,
+  Widget _buildConfirmationView(bool isDark) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const TogetherMascot(
+            pose: MisoPose.message,
+            height: 100,
+            animateOnTap: true,
           ),
-          child: const Icon(
-            Icons.mark_email_read_rounded,
-            color: AppColors.partnerSageDark,
-            size: 36,
+          const SizedBox(height: AppTokens.space20),
+          Text(
+            'Check Your Inbox',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
           ),
-        ),
-        const SizedBox(height: 20),
-        Text(
-          'Check Your Inbox',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'If an account exists for ${_emailController.text.trim()}, instructions to reset your password have been sent.',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 28),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
+          const SizedBox(height: AppTokens.space8),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 300),
+            child: Text(
+              'If an account exists for "${_emailController.text.trim()}", password reset instructions have been dispatched.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.textSecondary,
+                    height: 1.45,
+                  ),
+            ),
+          ),
+          const SizedBox(height: AppTokens.space28),
+          TogetherButton(
+            label: 'Back to Sign In',
             onPressed: () => context.pop(),
-            child: const Text('Back to Sign In'),
+            variant: TogetherButtonVariant.outline,
+            width: 180,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

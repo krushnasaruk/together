@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
+import 'components/together_feedback.dart';
+import 'mascot/together_mascot.dart';
 
-/// Discreet badge allowing quick switching between Partner A and Partner B in demo mode.
+/// Discreet pill allowing quick switching between Partner A and Partner B in demo mode.
 class PartnerSwitcherBadge extends ConsumerWidget {
   const PartnerSwitcherBadge({super.key});
 
@@ -17,17 +19,16 @@ class PartnerSwitcherBadge extends ConsumerWidget {
         ref.read(authProvider.notifier).switchPartner();
         final switchedTo =
             user.uid == 'user_alex' ? 'Taylor Brooks' : 'Alex Rivers';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Switched view to $switchedTo'),
-            duration: const Duration(seconds: 1),
-            behavior: SnackBarBehavior.floating,
-          ),
+        TogetherFeedback.showToast(
+          context,
+          message: 'Switched persona to $switchedTo',
+          pose: MisoPose.wave,
+          duration: const Duration(seconds: 1),
         );
       },
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           color: partnerColor.withOpacity(0.12),
           borderRadius: BorderRadius.circular(20),
@@ -49,7 +50,7 @@ class PartnerSwitcherBadge extends ConsumerWidget {
               user.displayName.split(' ').first,
               style: TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: partnerColor,
               ),
             ),
