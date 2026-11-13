@@ -114,3 +114,4 @@ lib/
 3. **Integration Tests & Firebase Emulators**:
    - Firestore security rules verification using `@firebase/rules-unit-testing`.
    - Full flow testing from authentication to event creation and calendar rendering.
+

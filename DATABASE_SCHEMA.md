@@ -143,3 +143,4 @@ To support high-performance filtered range queries on events without unbounded r
 4. **Invitations Lookup by Code**:
    - Collection: `invitations`
    - Fields: `code` ASC, `status` ASC
+
