@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/widgets/components/cards/hero_panel.dart';
 import '../../../../shared/widgets/components/event_timeline_tile.dart';
 import '../../../../shared/widgets/components/section_header.dart';
 import '../../../../shared/widgets/components/together_avatar.dart';
@@ -289,17 +290,8 @@ class TodayScreen extends ConsumerWidget {
         .toList()
         .firstOrNull;
 
-    return Container(
-      padding: const EdgeInsets.all(AppTokens.space16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
-        borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-        border: Border.all(
-          color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
-          width: 1,
-        ),
-        boxShadow: AppTokens.softShadow,
-      ),
+    return HeroPanel(
+      accentColor: AppColors.partnerRose,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -331,7 +323,8 @@ class TodayScreen extends ConsumerWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.partnerRose.withOpacity(0.12),
+                            color:
+                                AppColors.partnerRose.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text(
@@ -433,17 +426,8 @@ class TodayScreen extends ConsumerWidget {
     required List<dynamic> freeWindows,
     required bool isDark,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(AppTokens.space16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
-        borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-        border: Border.all(
-          color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
-          width: 1,
-        ),
-        boxShadow: AppTokens.softShadow,
-      ),
+    return HeroPanel(
+      accentColor: AppColors.primary,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
