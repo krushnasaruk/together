@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
-import '../../../../shared/widgets/components/together_buttons.dart';
-import '../../../../shared/widgets/components/together_feedback.dart';
+import '../../../../shared/widgets/clay/clay_button.dart';
+import '../../../../shared/widgets/clay/clay_input.dart';
+import '../../../../shared/widgets/clay/together_toast.dart';
+import '../../../../shared/widgets/mascot/miso_character.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
+import '../../../../shared/widgets/motion/text_animations.dart';
 
-/// Production-ready Login Screen with client-side validation and session initialization.
-/// Redesigned with Together's warm, clean Miso visual identity.
+/// Production-ready Login Screen with client-side validation and tactile claymorphic controls.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -34,13 +36,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    // Simulate auth verification or emulator login
     await Future.delayed(const Duration(milliseconds: 500));
 
     if (mounted) {
       setState(() => _isLoading = false);
       context.go('/today');
-      TogetherFeedback.showToast(
+      TogetherToast.show(
         context,
         message: 'Welcome back to Together!',
         pose: MisoPose.happy,
@@ -76,8 +77,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Welcome Back',
+                        AnimatedHeading(
+                          text: 'Welcome Back',
                           style: Theme.of(context)
                               .textTheme
                               .displaySmall
@@ -98,7 +99,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ],
                     ),
                   ),
-                  const TogetherMascot(
+                  const MisoCharacter(
                     pose: MisoPose.relaxed,
                     height: 64,
                     width: 64,
@@ -107,15 +108,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: AppTokens.space28),
 
-              // Email Field
-              TextFormField(
+              // Email Clay Input
+              ClayInput(
                 controller: _emailController,
+                labelText: 'Email Address',
+                hintText: 'partner@example.com',
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email Address',
-                  hintText: 'partner@example.com',
-                  prefixIcon: Icon(Icons.mail_outline_rounded, size: 20),
-                ),
+                prefixIcon: const Icon(Icons.mail_outline_rounded, size: 20),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
                     return 'Please enter your email';
@@ -128,23 +127,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: AppTokens.space16),
 
-              // Password Field
-              TextFormField(
+              // Password Clay Input
+              ClayInput(
                 controller: _passwordController,
+                labelText: 'Password',
+                hintText: '••••••••',
                 obscureText: _obscurePassword,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      size: 20,
-                    ),
-                    onPressed: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
+                prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 20,
                   ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
                 validator: (val) {
                   if (val == null || val.isEmpty) {
@@ -177,8 +175,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: AppTokens.space20),
 
-              // Sign In Button
-              TogetherButton(
+              // Sign In Tactile Clay Button
+              ClayButton(
                 label: 'Sign In',
                 onPressed: _handleLogin,
                 isLoading: _isLoading,

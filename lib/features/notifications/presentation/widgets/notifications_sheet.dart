@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/clay/together_surface.dart';
 import '../../../../shared/widgets/mascot/mascot_states.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
@@ -30,6 +32,7 @@ class NotificationsSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentUserId = ref.watch(authProvider).currentUser.uid;
     final notifications = ref
         .watch(notificationProvider)
@@ -102,95 +105,99 @@ class NotificationsSheet extends ConsumerWidget {
                       separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final notif = notifications[index];
-                        return InkWell(
+                        return TogetherSurface(
+                          surfaceType: notif.isRead
+                              ? ClaySurfaceType.flat
+                              : ClaySurfaceType.raised,
                           onTap: () {
                             ref
                                 .read(notificationProvider.notifier)
                                 .markAsRead(notif.id);
                           },
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: notif.isRead
-                                  ? AppColors.surface
-                                  : AppColors.surfaceElevated,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: notif.isRead
-                                    ? AppColors.borderSubtle
-                                    : AppColors.partnerSage.withOpacity(0.4),
-                                width: notif.isRead ? 1 : 1.5,
+                          borderRadius:
+                              BorderRadius.circular(AppTokens.radiusMd),
+                          borderColor: notif.isRead
+                              ? (isDark
+                                  ? AppColors.darkDivider
+                                  : AppColors.borderSubtle)
+                              : AppColors.partnerSage.withOpacity(0.5),
+                          padding: const EdgeInsets.all(14),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF2A362D)
+                                      : AppColors.partnerSageLight,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  notif.type.icon,
+                                  size: 18,
+                                  color: isDark
+                                      ? AppColors.darkPrimary
+                                      : AppColors.partnerSageDark,
+                                ),
                               ),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.partnerSageLight,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(
-                                    notif.type.icon,
-                                    size: 18,
-                                    color: AppColors.partnerSageDark,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              notif.title,
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: notif.isRead
-                                                    ? FontWeight.w500
-                                                    : FontWeight.w600,
-                                                color: AppColors.textPrimary,
-                                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            notif.title,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: notif.isRead
+                                                  ? FontWeight.w500
+                                                  : FontWeight.w600,
+                                              color: isDark
+                                                  ? AppColors.darkTextPrimary
+                                                  : AppColors.textPrimary,
                                             ),
                                           ),
-                                          Text(
-                                            _formatTimeAgo(notif.createdAt),
-                                            style: const TextStyle(
-                                              fontSize: 11,
-                                              color: AppColors.textTertiary,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        notif.body,
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          color: AppColors.textSecondary,
                                         ),
+                                        Text(
+                                          _formatTimeAgo(notif.createdAt),
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: isDark
+                                                ? AppColors.darkTextSecondary
+                                                : AppColors.textTertiary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      notif.body,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: isDark
+                                            ? AppColors.darkTextSecondary
+                                            : AppColors.textSecondary,
                                       ),
-                                    ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (!notif.isRead) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.partnerSage,
+                                    shape: BoxShape.circle,
                                   ),
                                 ),
-                                if (!notif.isRead) ...[
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.partnerSage,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ],
                               ],
-                            ),
+                            ],
                           ),
                         );
                       },

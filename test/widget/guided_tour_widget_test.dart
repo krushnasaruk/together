@@ -49,7 +49,8 @@ void main() {
       expect(GuidedTourRegistry.getKey(targetId), isNull);
     });
 
-    testWidgets('ComicDialogueBubble renders title, message, counter, and handles taps',
+    testWidgets(
+        'ComicDialogueBubble renders title, message, counter, and handles taps',
         (tester) async {
       bool nextTapped = false;
       bool prevTapped = false;

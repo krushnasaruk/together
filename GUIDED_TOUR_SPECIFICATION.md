@@ -52,3 +52,4 @@ lib/core/onboarding/
 ## 4. Spotlight Cutout Geometry
 
 The overlay draws a full-screen semi-transparent backdrop (`Color(0x99000000)`) with an inverted rounded rectangle cutout around the target widget's bounding box plus 8pt padding. A soft pulsing primary-colored border (`Color(0xFF536B54)`) surrounds the target to draw user attention.
+

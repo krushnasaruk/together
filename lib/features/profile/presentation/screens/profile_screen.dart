@@ -5,6 +5,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/onboarding/guided_tour_controller.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/theme_provider.dart';
+import '../../../../shared/widgets/clay/clay_toggle.dart';
+import '../../../../shared/widgets/clay/together_surface.dart';
 import '../../../../shared/widgets/components/cards/action_card.dart';
 import '../../../../shared/widgets/components/section_header.dart';
 import '../../../../shared/widgets/components/together_avatar.dart';
@@ -56,17 +58,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         children: [
           // Active User Card with Miso Identity
-          Container(
+          TogetherSurface(
+            surfaceType: ClaySurfaceType.raised,
             padding: const EdgeInsets.all(AppTokens.space16),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurface : AppColors.surface,
-              borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-              border: Border.all(
-                color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
-                width: 1,
-              ),
-              boxShadow: AppTokens.softShadow,
-            ),
             child: Row(
               children: [
                 TogetherAvatar(
@@ -124,75 +118,62 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             subtitle: 'Pairing and shared life connection',
             padding: EdgeInsets.only(bottom: AppTokens.space8),
           ),
-          InkWell(
+          TogetherSurface(
+            surfaceType: ClaySurfaceType.raised,
             onTap: () => PairingSheet.show(context),
-            borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-            child: Container(
-              padding: const EdgeInsets.all(AppTokens.space16),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurface : AppColors.surface,
-                borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-                border: Border.all(
-                  color:
-                      isDark ? AppColors.darkDivider : AppColors.borderSubtle,
-                  width: 1,
-                ),
-                boxShadow: AppTokens.softShadow,
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF382A2A)
-                          : AppColors.partnerRoseLight,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.favorite_rounded,
-                      color: AppColors.partnerRose,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: AppTokens.space12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          auth.isPaired
-                              ? 'Paired with ${user.partnerName ?? "Partner"}'
-                              : 'Unpaired Workspace',
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          auth.isPaired
-                              ? 'Workspace ID: ${couple?.id ?? "couple_workspace_01"}'
-                              : 'Tap to generate invite code or pair',
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: isDark
-                                        ? AppColors.darkTextSecondary
-                                        : AppColors.textSecondary,
-                                  ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.chevron_right_rounded,
+            padding: const EdgeInsets.all(AppTokens.space16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
                     color: isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.textTertiary,
-                    size: 22,
+                        ? const Color(0xFF382A2A)
+                        : AppColors.partnerRoseLight,
+                    shape: BoxShape.circle,
                   ),
-                ],
-              ),
+                  child: const Icon(
+                    Icons.favorite_rounded,
+                    color: AppColors.partnerRose,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: AppTokens.space12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        auth.isPaired
+                            ? 'Paired with ${user.partnerName ?? "Partner"}'
+                            : 'Unpaired Workspace',
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        auth.isPaired
+                            ? 'Workspace ID: ${couple?.id ?? "couple_workspace_01"}'
+                            : 'Tap to generate invite code or pair',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.textSecondary,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.textTertiary,
+                  size: 22,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: AppTokens.space20),
@@ -203,15 +184,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             subtitle: 'Choose between warm light and cozy dark mode',
             padding: EdgeInsets.only(bottom: AppTokens.space8),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurface : AppColors.surface,
-              borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-              border: Border.all(
-                color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
-                width: 1,
-              ),
-            ),
+          TogetherSurface(
+            surfaceType: ClaySurfaceType.raised,
+            padding: EdgeInsets.zero,
             child: Column(
               children: [
                 RadioListTile<ThemeMode>(
@@ -228,7 +203,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     }
                   },
                 ),
-                const Divider(),
+                const Divider(height: 1),
                 RadioListTile<ThemeMode>(
                   title: const Text('Dark Mode (Warm Charcoal)',
                       style:
@@ -243,7 +218,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     }
                   },
                 ),
-                const Divider(),
+                const Divider(height: 1),
                 RadioListTile<ThemeMode>(
                   title: const Text('System Default',
                       style:
@@ -269,57 +244,114 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             subtitle: 'Control which partner alerts you receive',
             padding: EdgeInsets.only(bottom: AppTokens.space8),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurface : AppColors.surface,
-              borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-              border: Border.all(
-                color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
-                width: 1,
-              ),
+          TogetherSurface(
+            surfaceType: ClaySurfaceType.raised,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTokens.space16,
+              vertical: AppTokens.space8,
             ),
             child: Column(
               children: [
-                SwitchListTile(
-                  title: const Text('New Event Notifications',
-                      style:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                  subtitle: const Text(
-                      'Receive push alerts when partner schedules events',
-                      style: TextStyle(
-                          fontSize: 12, color: AppColors.textSecondary)),
-                  activeColor:
-                      isDark ? AppColors.darkPrimary : AppColors.primaryDark,
-                  value: _notifyOnCreated,
-                  onChanged: (val) => setState(() => _notifyOnCreated = val),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('New Event Notifications',
+                                style: TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Receive push alerts when partner schedules events',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ClayToggle(
+                        value: _notifyOnCreated,
+                        onChanged: (val) =>
+                            setState(() => _notifyOnCreated = val),
+                      ),
+                    ],
+                  ),
                 ),
-                const Divider(),
-                SwitchListTile(
-                  title: const Text('Schedule Update Alerts',
-                      style:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                  subtitle: const Text(
-                      'Get notified when partner reschedules or changes plans',
-                      style: TextStyle(
-                          fontSize: 12, color: AppColors.textSecondary)),
-                  activeColor:
-                      isDark ? AppColors.darkPrimary : AppColors.primaryDark,
-                  value: _notifyOnUpdated,
-                  onChanged: (val) => setState(() => _notifyOnUpdated = val),
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Schedule Update Alerts',
+                                style: TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Get notified when partner reschedules or changes plans',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ClayToggle(
+                        value: _notifyOnUpdated,
+                        onChanged: (val) =>
+                            setState(() => _notifyOnUpdated = val),
+                      ),
+                    ],
+                  ),
                 ),
-                const Divider(),
-                SwitchListTile(
-                  title: const Text('Quick Status Updates',
-                      style:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                  subtitle: const Text(
-                      'Receive notifications for "On my way", "Free now", etc.',
-                      style: TextStyle(
-                          fontSize: 12, color: AppColors.textSecondary)),
-                  activeColor:
-                      isDark ? AppColors.darkPrimary : AppColors.primaryDark,
-                  value: _notifyOnStatus,
-                  onChanged: (val) => setState(() => _notifyOnStatus = val),
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Quick Status Updates',
+                                style: TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Receive notifications for "On my way", "Free now", etc.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ClayToggle(
+                        value: _notifyOnStatus,
+                        onChanged: (val) =>
+                            setState(() => _notifyOnStatus = val),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -332,26 +364,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             subtitle: 'Default event visibility settings',
             padding: EdgeInsets.only(bottom: AppTokens.space8),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurface : AppColors.surface,
-              borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-              border: Border.all(
-                color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
-                width: 1,
-              ),
+          TogetherSurface(
+            surfaceType: ClaySurfaceType.raised,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTokens.space16,
+              vertical: AppTokens.space12,
             ),
-            child: SwitchListTile(
-              title: const Text('Default New Events to Private',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-              subtitle: const Text(
-                  'Partner only sees "Busy" unless explicitly marked as shared',
-                  style:
-                      TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-              activeColor:
-                  isDark ? AppColors.darkPrimary : AppColors.primaryDark,
-              value: _defaultPrivate,
-              onChanged: (val) => setState(() => _defaultPrivate = val),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Default New Events to Private',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Partner only sees "Busy" unless explicitly marked as shared',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                ClayToggle(
+                  value: _defaultPrivate,
+                  onChanged: (val) => setState(() => _defaultPrivate = val),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: AppTokens.space20),
@@ -390,15 +436,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             subtitle: 'Session reset and data integrity',
             padding: EdgeInsets.only(bottom: AppTokens.space8),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurface : AppColors.surface,
-              borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-              border: Border.all(
-                color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
-                width: 1,
-              ),
-            ),
+          TogetherSurface(
+            surfaceType: ClaySurfaceType.raised,
+            padding: EdgeInsets.zero,
             child: Column(
               children: [
                 ListTile(
@@ -418,7 +458,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     );
                   },
                 ),
-                const Divider(),
+                const Divider(height: 1),
                 const ListTile(
                   leading: Icon(Icons.shield_outlined,
                       size: 20, color: AppColors.success),

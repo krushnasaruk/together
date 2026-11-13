@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/clay/clay_button.dart';
+import '../../../../shared/widgets/clay/clay_icon_button.dart';
+import '../../../../shared/widgets/clay/clay_input.dart';
+import '../../../../shared/widgets/clay/together_surface.dart';
+import '../../../../shared/widgets/clay/together_toast.dart';
+import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 
-/// Modal bottom sheet for couple invitation generation and pairing verification.
+/// Modal bottom sheet for couple invitation generation and pairing verification with tactile clay styling.
 class PairingSheet extends ConsumerStatefulWidget {
   const PairingSheet({super.key});
 
@@ -44,18 +51,16 @@ class _PairingSheetState extends ConsumerState<PairingSheet> {
     if (mounted) {
       if (success) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Successfully paired! Couple workspace is active.'),
-            behavior: SnackBarBehavior.floating,
-          ),
+        TogetherToast.show(
+          context,
+          message: 'Successfully paired! Couple workspace is active.',
+          pose: MisoPose.celebrating,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid or expired invitation code. Try TOG-789.'),
-            behavior: SnackBarBehavior.floating,
-          ),
+        TogetherToast.show(
+          context,
+          message: 'Invalid or expired invitation code. Try TOG-789.',
+          pose: MisoPose.confused,
         );
       }
     }
@@ -63,6 +68,7 @@ class _PairingSheetState extends ConsumerState<PairingSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final auth = ref.watch(authProvider);
     final user = auth.currentUser;
     final isPaired = auth.isPaired;
@@ -74,9 +80,9 @@ class _PairingSheetState extends ConsumerState<PairingSheet> {
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkBackground : AppColors.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         top: false,
@@ -119,13 +125,10 @@ class _PairingSheetState extends ConsumerState<PairingSheet> {
                 children: [
                   if (isPaired) ...[
                     // Paired Status Card
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.borderSubtle),
-                      ),
+                    TogetherSurface(
+                      surfaceType: ClaySurfaceType.raised,
+                      accentColor: AppColors.partnerRose,
+                      padding: const EdgeInsets.all(AppTokens.space16),
                       child: Row(
                         children: [
                           Container(
@@ -160,22 +163,18 @@ class _PairingSheetState extends ConsumerState<PairingSheet> {
                     ),
                     const SizedBox(height: 20),
 
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.link_off_rounded,
-                          color: AppColors.statusCancelled),
-                      label: const Text(
-                        'Leave Couple Workspace',
-                        style: TextStyle(color: AppColors.statusCancelled),
-                      ),
+                    ClayButton(
+                      label: 'Leave Couple Workspace',
+                      variant: ClayButtonVariant.danger,
+                      expanded: true,
                       onPressed: () async {
                         await ref.read(authProvider.notifier).leaveCouple();
                         if (context.mounted) {
                           Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Left couple workspace.'),
-                              behavior: SnackBarBehavior.floating,
-                            ),
+                          TogetherToast.show(
+                            context,
+                            message: 'Left couple workspace.',
+                            pose: MisoPose.reassuring,
                           );
                         }
                       },
@@ -193,13 +192,9 @@ class _PairingSheetState extends ConsumerState<PairingSheet> {
                     ),
                     const SizedBox(height: 14),
 
-                    Container(
+                    TogetherSurface(
+                      surfaceType: ClaySurfaceType.raised,
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.borderSubtle),
-                      ),
                       child: Row(
                         children: [
                           Expanded(
@@ -225,17 +220,15 @@ class _PairingSheetState extends ConsumerState<PairingSheet> {
                               ],
                             ),
                           ),
-                          IconButton.filledTonal(
+                          ClayIconButton(
                             icon: const Icon(Icons.copy_rounded, size: 20),
                             onPressed: () {
                               Clipboard.setData(
                                   ClipboardData(text: _generatedCode));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content:
-                                      Text('Invite code copied to clipboard!'),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
+                              TogetherToast.show(
+                                context,
+                                message: 'Invite code copied to clipboard!',
+                                pose: MisoPose.wave,
                               );
                             },
                           ),
@@ -250,29 +243,18 @@ class _PairingSheetState extends ConsumerState<PairingSheet> {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 10),
-                    TextField(
+                    ClayInput(
                       controller: _codeController,
-                      textCapitalization: TextCapitalization.characters,
-                      decoration: const InputDecoration(
-                        labelText: 'Enter Partner Code',
-                        hintText: 'e.g. TOG-789',
-                        prefixIcon: Icon(Icons.vpn_key_outlined, size: 20),
-                      ),
+                      labelText: 'Enter Partner Code',
+                      hintText: 'e.g. TOG-789',
+                      prefixIcon: const Icon(Icons.vpn_key_outlined, size: 20),
                     ),
                     const SizedBox(height: 14),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isJoining ? null : _handleJoin,
-                        child: _isJoining
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Text('Accept & Join Workspace'),
-                      ),
+                    ClayButton(
+                      label: 'Accept & Join Workspace',
+                      onPressed: _isJoining ? null : _handleJoin,
+                      isLoading: _isJoining,
+                      expanded: true,
                     ),
                   ],
                 ],

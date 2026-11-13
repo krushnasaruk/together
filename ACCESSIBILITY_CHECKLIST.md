@@ -63,3 +63,4 @@ This document details the accessibility foundations and compliance verification 
   - Animation durations drop to `Duration.zero`.
   - Mascots remain static in their resting pose without continuous breathing/bobbing.
   - Spotlight overlay fades in immediately without continuous scale bouncing.
+

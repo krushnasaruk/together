@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/clay/clay_button.dart';
+import '../../../../shared/widgets/clay/together_surface.dart';
 import '../../../../shared/widgets/components/together_feedback.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
@@ -205,6 +208,7 @@ class _EventFormSheetState extends ConsumerState<EventFormSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isEditing = widget.initialEvent != null;
     final keyboardBottom = MediaQuery.of(context).viewInsets.bottom;
 
@@ -276,38 +280,36 @@ class _EventFormSheetState extends ConsumerState<EventFormSheet> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Date & Time Selectors
+                    // Date & Time Selectors (Inset Clay Surfaces)
                     Row(
                       children: [
                         Expanded(
-                          child: InkWell(
+                          child: TogetherSurface(
+                            surfaceType: ClaySurfaceType.inset,
                             onTap: _pickDate,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 14),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(12),
-                                border:
-                                    Border.all(color: AppColors.borderSubtle),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.calendar_today_rounded,
-                                      size: 18, color: AppColors.partnerSage),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      DateFormat('MMM d, yyyy')
-                                          .format(_selectedDate),
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 13),
+                            borderRadius:
+                                BorderRadius.circular(AppTokens.radiusMd),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 14),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.calendar_today_rounded,
+                                    size: 18, color: AppColors.partnerSage),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    DateFormat('MMM d, yyyy')
+                                        .format(_selectedDate),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                      color: isDark
+                                          ? AppColors.darkTextPrimary
+                                          : AppColors.textPrimary,
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -317,61 +319,63 @@ class _EventFormSheetState extends ConsumerState<EventFormSheet> {
                     Row(
                       children: [
                         Expanded(
-                          child: InkWell(
+                          child: TogetherSurface(
+                            surfaceType: ClaySurfaceType.inset,
                             onTap: () => _pickTime(isStart: true),
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 14),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(12),
-                                border:
-                                    Border.all(color: AppColors.borderSubtle),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.schedule_rounded,
-                                      size: 18, color: AppColors.textSecondary),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Start: ${_startTime.format(context)}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 13),
+                            borderRadius:
+                                BorderRadius.circular(AppTokens.radiusMd),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 14),
+                            child: Row(
+                              children: [
+                                Icon(Icons.schedule_rounded,
+                                    size: 18,
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.textSecondary),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Start: ${_startTime.format(context)}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                    color: isDark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.textPrimary,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: InkWell(
+                          child: TogetherSurface(
+                            surfaceType: ClaySurfaceType.inset,
                             onTap: () => _pickTime(isStart: false),
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 14),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(12),
-                                border:
-                                    Border.all(color: AppColors.borderSubtle),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.schedule_rounded,
-                                      size: 18, color: AppColors.textSecondary),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'End: ${_endTime.format(context)}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 13),
+                            borderRadius:
+                                BorderRadius.circular(AppTokens.radiusMd),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 14),
+                            child: Row(
+                              children: [
+                                Icon(Icons.schedule_rounded,
+                                    size: 18,
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.textSecondary),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'End: ${_endTime.format(context)}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                    color: isDark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.textPrimary,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -379,33 +383,39 @@ class _EventFormSheetState extends ConsumerState<EventFormSheet> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Privacy & Visibility Selector (Core Requirement)
+                    // Privacy & Visibility Selector (Tactile Raised Clay Surface)
                     Text(
                       'Visibility to Partner',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.borderSubtle),
-                      ),
+                    TogetherSurface(
+                      surfaceType: ClaySurfaceType.raised,
+                      borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                      padding: EdgeInsets.zero,
+                      borderColor: isDark
+                          ? AppColors.darkDivider
+                          : AppColors.borderSubtle,
                       child: Column(
                         children: [
                           RadioListTile<EventVisibility>(
                             value: EventVisibility.shared,
                             groupValue: _visibility,
-                            activeColor: AppColors.partnerSage,
+                            activeColor: isDark
+                                ? AppColors.darkPrimary
+                                : AppColors.partnerSage,
                             title: const Text(
                               'Shared with Partner',
                               style: TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600),
                             ),
-                            subtitle: const Text(
+                            subtitle: Text(
                               'Partner sees title, time, and full details',
                               style: TextStyle(
-                                  fontSize: 12, color: AppColors.textSecondary),
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.textSecondary),
                             ),
                             onChanged: (val) {
                               if (val != null) {
@@ -413,20 +423,25 @@ class _EventFormSheetState extends ConsumerState<EventFormSheet> {
                               }
                             },
                           ),
-                          const Divider(),
+                          const Divider(height: 1),
                           RadioListTile<EventVisibility>(
                             value: EventVisibility.private,
                             groupValue: _visibility,
-                            activeColor: AppColors.partnerSage,
+                            activeColor: isDark
+                                ? AppColors.darkPrimary
+                                : AppColors.partnerSage,
                             title: const Text(
                               'Private (Busy Time Block)',
                               style: TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600),
                             ),
-                            subtitle: const Text(
+                            subtitle: Text(
                               'Partner only sees "Busy". Details and notes are hidden',
                               style: TextStyle(
-                                  fontSize: 12, color: AppColors.textSecondary),
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.textSecondary),
                             ),
                             onChanged: (val) {
                               if (val != null) {
@@ -535,12 +550,10 @@ class _EventFormSheetState extends ConsumerState<EventFormSheet> {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: SizedBox(
+                child: ClayButton(
+                  onPressed: _saveEvent,
+                  label: isEditing ? 'Save Changes' : 'Schedule Event',
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _saveEvent,
-                    child: Text(isEditing ? 'Save Changes' : 'Schedule Event'),
-                  ),
                 ),
               ),
             ],

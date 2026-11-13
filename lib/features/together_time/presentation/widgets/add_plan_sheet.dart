@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/clay/clay_button.dart';
+import '../../../../shared/widgets/clay/together_surface.dart';
 import '../../domain/models/together_model.dart';
 import '../providers/together_plans_provider.dart';
 
@@ -98,6 +101,7 @@ class _AddPlanSheetState extends ConsumerState<AddPlanSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final keyboardBottom = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -105,9 +109,9 @@ class _AddPlanSheetState extends ConsumerState<AddPlanSheet> {
         maxHeight: MediaQuery.of(context).size.height * 0.8,
       ),
       margin: EdgeInsets.only(bottom: keyboardBottom),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         top: false,
@@ -217,42 +221,40 @@ class _AddPlanSheetState extends ConsumerState<AddPlanSheet> {
                     const SizedBox(height: 14),
 
                     // Target Date (Optional)
-                    InkWell(
+                    TogetherSurface(
+                      surfaceType: ClaySurfaceType.inset,
                       onTap: _pickDate,
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.borderSubtle),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.calendar_month_rounded,
-                                size: 20, color: AppColors.partnerRose),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                _targetDate == null
-                                    ? 'Set target date (optional)'
-                                    : 'Target: ${DateFormat('MMMM d, yyyy').format(_targetDate!)}',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: _targetDate == null
-                                      ? AppColors.textTertiary
-                                      : AppColors.textPrimary,
-                                ),
+                      borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_month_rounded,
+                              size: 20, color: AppColors.partnerRose),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _targetDate == null
+                                  ? 'Set target date (optional)'
+                                  : 'Target: ${DateFormat('MMMM d, yyyy').format(_targetDate!)}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: _targetDate == null
+                                    ? (isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.textTertiary)
+                                    : (isDark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.textPrimary),
                               ),
                             ),
-                            if (_targetDate != null)
-                              IconButton(
-                                icon: const Icon(Icons.clear_rounded, size: 18),
-                                onPressed: () =>
-                                    setState(() => _targetDate = null),
-                              ),
-                          ],
-                        ),
+                          ),
+                          if (_targetDate != null)
+                            IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 18),
+                              onPressed: () =>
+                                  setState(() => _targetDate = null),
+                            ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -262,15 +264,11 @@ class _AddPlanSheetState extends ConsumerState<AddPlanSheet> {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: SizedBox(
+                child: ClayButton(
+                  onPressed: _submit,
+                  label: 'Add to Together Space',
+                  color: AppColors.partnerRose,
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.partnerRose,
-                    ),
-                    child: const Text('Add to Together Space'),
-                  ),
                 ),
               ),
             ],

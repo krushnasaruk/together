@@ -71,3 +71,4 @@ Together pairs **Nunito Sans** for expressive, friendly headings with **DM Sans*
 - **Shadows:** Restrained, natural light diffusion:
   - `softShadow`: `BoxShadow(color: Color(0x0A000000), offset: Offset(0, 2), blurRadius: 8)`
   - `cardShadow`: `BoxShadow(color: Color(0x0D000000), offset: Offset(0, 4), blurRadius: 12)`
+

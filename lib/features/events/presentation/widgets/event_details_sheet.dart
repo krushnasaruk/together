@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/clay/together_surface.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../domain/models/event_model.dart';
 import '../providers/event_provider.dart';
@@ -333,17 +335,21 @@ class EventDetailsSheet extends ConsumerWidget {
     required String title,
     required String subtitle,
   }) {
-    return Container(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return TogetherSurface(
+      surfaceType: ClaySurfaceType.flat,
+      borderRadius: BorderRadius.circular(AppTokens.radiusMd),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
+      borderColor: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: AppColors.textSecondary),
+          Icon(
+            icon,
+            size: 20,
+            color:
+                isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -351,18 +357,22 @@ class EventDetailsSheet extends ConsumerWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.textSecondary,
                   ),
                 ),
               ],

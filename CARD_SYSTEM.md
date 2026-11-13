@@ -35,3 +35,4 @@
 ### Tier 5: Mascot Message Cards (`MascotMessage`)
 - **Usage:** Warm Miso greeting, onboarding dialogue bubbles, contextual tips.
 - **Visuals:** Organic rounded bubble, Miso character illustration, speech pointer, dismiss button.
+

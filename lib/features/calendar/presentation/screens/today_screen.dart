@@ -4,12 +4,13 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../shared/widgets/components/cards/hero_panel.dart';
+import '../../../../shared/widgets/clay/together_surface.dart';
 import '../../../../shared/widgets/components/event_timeline_tile.dart';
 import '../../../../shared/widgets/components/section_header.dart';
 import '../../../../shared/widgets/components/together_avatar.dart';
 import '../../../../shared/widgets/mascot/mascot_states.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
+import '../../../../shared/widgets/motion/text_animations.dart';
 import '../../../../shared/widgets/partner_switcher_badge.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../availability/presentation/providers/availability_provider.dart';
@@ -290,7 +291,8 @@ class TodayScreen extends ConsumerWidget {
         .toList()
         .firstOrNull;
 
-    return HeroPanel(
+    return TogetherSurface(
+      surfaceType: ClaySurfaceType.raised,
       accentColor: AppColors.partnerRose,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,8 +325,7 @@ class TodayScreen extends ConsumerWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color:
-                                AppColors.partnerRose.withOpacity(0.12),
+                            color: AppColors.partnerRose.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text(
@@ -339,8 +340,8 @@ class TodayScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      partnerStatus != null
+                    AnimatedStatusText(
+                      text: partnerStatus != null
                           ? '${partnerStatus.preset.emoji} ${partnerStatus.preset.title}${partnerStatus.customNote != null && partnerStatus.customNote!.isNotEmpty ? " • \"${partnerStatus.customNote}\"" : ""}'
                           : '🌿 Active in workspace',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -366,15 +367,11 @@ class TodayScreen extends ConsumerWidget {
           ),
           if (nextEvent != null) ...[
             const SizedBox(height: AppTokens.space12),
-            Container(
+            TogetherSurface(
+              surfaceType: ClaySurfaceType.inset,
               padding: const EdgeInsets.symmetric(
                 horizontal: AppTokens.space12,
                 vertical: AppTokens.space8,
-              ),
-              decoration: BoxDecoration(
-                color:
-                    isDark ? const Color(0xFF242A25) : const Color(0xFFF7F4EE),
-                borderRadius: BorderRadius.circular(AppTokens.radiusSm),
               ),
               child: Row(
                 children: [
@@ -426,7 +423,8 @@ class TodayScreen extends ConsumerWidget {
     required List<dynamic> freeWindows,
     required bool isDark,
   }) {
-    return HeroPanel(
+    return TogetherSurface(
+      surfaceType: ClaySurfaceType.raised,
       accentColor: AppColors.primary,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -469,49 +467,47 @@ class TodayScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppTokens.space10),
           ...freeWindows.take(2).map((window) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 6),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTokens.space12,
-                vertical: AppTokens.space8,
-              ),
-              decoration: BoxDecoration(
-                color:
-                    isDark ? const Color(0xFF28342B) : const Color(0xFFF2F6F1),
-                borderRadius: BorderRadius.circular(AppTokens.radiusSm),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.wb_sunny_rounded,
-                    size: 14,
-                    color: Color(0xFF6B8A70),
-                  ),
-                  const SizedBox(width: AppTokens.space8),
-                  Text(
-                    window.formattedTime as String,
-                    style: AppTypography.scheduleTimeStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: isDark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.textPrimary,
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6.0),
+              child: TogetherSurface(
+                surfaceType: ClaySurfaceType.inset,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTokens.space12,
+                  vertical: AppTokens.space8,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.wb_sunny_rounded,
+                      size: 14,
+                      color: Color(0xFF6B8A70),
                     ),
-                  ),
-                  const SizedBox(width: AppTokens.space8),
-                  Expanded(
-                    child: Text(
-                      window.suggestion as String,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
+                    const SizedBox(width: AppTokens.space8),
+                    Text(
+                      window.formattedTime as String,
+                      style: AppTypography.scheduleTimeStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
                         color: isDark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.textSecondary,
+                            ? AppColors.darkTextPrimary
+                            : AppColors.textPrimary,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: AppTokens.space8),
+                    Expanded(
+                      child: Text(
+                        window.suggestion as String,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }),

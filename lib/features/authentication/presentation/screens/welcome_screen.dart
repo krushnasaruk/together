@@ -3,9 +3,13 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/clay/clay_button.dart';
+import '../../../../shared/widgets/clay/together_surface.dart';
+import '../../../../shared/widgets/mascot/miso_character.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
+import '../../../../shared/widgets/motion/text_animations.dart';
 
-/// Warm, playful, friendly welcome & onboarding screen featuring Miso.
+/// Warm, tactile, playful welcome & onboarding screen featuring Miso.
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
@@ -25,17 +29,18 @@ class WelcomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Spacer(),
-              // Miso Waving Mascot Hero
-              const TogetherMascot(
+              // Miso Waving Mascot Hero with breathing animation
+              const MisoCharacter(
                 pose: MisoPose.wave,
                 height: 140,
-                animateOnTap: true,
+                animateIdle: true,
               ),
               const SizedBox(height: AppTokens.space20),
 
-              // Title & Tagline
-              Text(
-                AppConstants.appName,
+              // Title with entrance animation & Tagline
+              AnimatedHeading(
+                text: AppConstants.appName,
+                textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.displayLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                       letterSpacing: -1.0,
@@ -53,21 +58,12 @@ class WelcomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppTokens.space24),
 
-              // Value Proposition Pill
-              Container(
+              // Value Proposition Clay Surface
+              TogetherSurface(
+                surfaceType: ClaySurfaceType.raised,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppTokens.space16,
                   vertical: AppTokens.space12,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface : AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-                  border: Border.all(
-                    color:
-                        isDark ? AppColors.darkDivider : AppColors.borderSubtle,
-                    width: 1,
-                  ),
-                  boxShadow: AppTokens.softShadow,
                 ),
                 child: Row(
                   children: [
@@ -93,27 +89,21 @@ class WelcomeScreen extends StatelessWidget {
               ),
               const Spacer(),
 
-              // Primary Actions
-              ElevatedButton(
+              // Primary Actions with Tactile Clay Buttons
+              ClayButton(
+                label: 'Create Two-Person Space',
+                variant: ClayButtonVariant.primary,
+                expanded: true,
+                height: AppTokens.buttonHeightLg,
                 onPressed: () => context.push('/register'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      isDark ? AppColors.darkPrimary : AppColors.primaryDark,
-                  foregroundColor:
-                      isDark ? AppColors.darkBackground : AppColors.textInverse,
-                  minimumSize:
-                      const Size(double.infinity, AppTokens.buttonHeightLg),
-                ),
-                child: const Text('Create Two-Person Space'),
               ),
               const SizedBox(height: AppTokens.space12),
-              OutlinedButton(
+              ClayButton(
+                label: 'Sign In to Account',
+                variant: ClayButtonVariant.secondary,
+                expanded: true,
+                height: AppTokens.buttonHeightLg,
                 onPressed: () => context.push('/login'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize:
-                      const Size(double.infinity, AppTokens.buttonHeightLg),
-                ),
-                child: const Text('Sign In to Account'),
               ),
               const SizedBox(height: AppTokens.space12),
 

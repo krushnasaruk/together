@@ -129,9 +129,8 @@ class ComicDialogueBubble extends StatelessWidget {
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: isDark
-                              ? Colors.white10
-                              : const Color(0xFFF0EFEA),
+                          color:
+                              isDark ? Colors.white10 : const Color(0xFFF0EFEA),
                         ),
                         child: Icon(
                           Icons.close_rounded,

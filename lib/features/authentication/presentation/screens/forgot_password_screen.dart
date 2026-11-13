@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
-import '../../../../shared/widgets/components/together_buttons.dart';
+import '../../../../shared/widgets/clay/clay_button.dart';
+import '../../../../shared/widgets/clay/clay_input.dart';
+import '../../../../shared/widgets/mascot/miso_character.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
+import '../../../../shared/widgets/motion/text_animations.dart';
 
-/// Password recovery screen providing neutral confirmation feedback.
-/// Redesigned with Together's warm, clean Miso visual identity.
+/// Password recovery screen providing neutral confirmation feedback and tactile clay controls.
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -69,8 +71,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Reset Password',
+                    AnimatedHeading(
+                      text: 'Reset Password',
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
@@ -87,7 +89,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ],
                 ),
               ),
-              const TogetherMascot(
+              const MisoCharacter(
                 pose: MisoPose.reassuring,
                 height: 64,
                 width: 64,
@@ -95,14 +97,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ],
           ),
           const SizedBox(height: AppTokens.space28),
-          TextFormField(
+          ClayInput(
             controller: _emailController,
+            labelText: 'Email Address',
+            hintText: 'name@example.com',
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              labelText: 'Email Address',
-              hintText: 'name@example.com',
-              prefixIcon: Icon(Icons.email_outlined, size: 20),
-            ),
+            prefixIcon: const Icon(Icons.email_outlined, size: 20),
             validator: (val) {
               if (val == null || val.trim().isEmpty) {
                 return 'Please enter your email';
@@ -114,7 +114,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             },
           ),
           const SizedBox(height: AppTokens.space24),
-          TogetherButton(
+          ClayButton(
             label: 'Send Reset Instructions',
             onPressed: _handleSubmit,
             expanded: true,
@@ -130,10 +130,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const TogetherMascot(
+          const MisoCharacter(
             pose: MisoPose.message,
             height: 100,
-            animateOnTap: true,
+            animateIdle: true,
           ),
           const SizedBox(height: AppTokens.space20),
           Text(
@@ -157,10 +157,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
           ),
           const SizedBox(height: AppTokens.space28),
-          TogetherButton(
+          ClayButton(
             label: 'Back to Sign In',
             onPressed: () => context.pop(),
-            variant: TogetherButtonVariant.outline,
+            variant: ClayButtonVariant.outline,
             width: 180,
           ),
         ],

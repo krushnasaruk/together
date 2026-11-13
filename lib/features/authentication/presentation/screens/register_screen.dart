@@ -3,14 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
-import '../../../../shared/widgets/components/together_buttons.dart';
-import '../../../../shared/widgets/components/together_feedback.dart';
+import '../../../../shared/widgets/clay/clay_button.dart';
+import '../../../../shared/widgets/clay/clay_input.dart';
+import '../../../../shared/widgets/clay/together_toast.dart';
+import '../../../../shared/widgets/mascot/miso_character.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
+import '../../../../shared/widgets/motion/text_animations.dart';
 import '../../domain/models/user_model.dart';
 import '../providers/auth_provider.dart';
 
-/// Production-ready Registration Screen enforcing input validation and account creation.
-/// Redesigned with Together's warm, clean Miso visual identity.
+/// Production-ready Registration Screen enforcing input validation and tactile clay controls.
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
@@ -48,7 +50,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         uid: 'user_${DateTime.now().millisecondsSinceEpoch}',
         email: _emailController.text.trim(),
         displayName: _nameController.text.trim(),
-        coupleId: null, // Starts unpaired
+        coupleId: null,
         partnerId: null,
         partnerName: null,
       );
@@ -58,7 +60,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       setState(() => _isLoading = false);
 
       context.go('/today');
-      TogetherFeedback.showToast(
+      TogetherToast.show(
         context,
         message: 'Account created! Pair with your partner in Profile.',
         pose: MisoPose.happy,
@@ -94,8 +96,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Create Your Account',
+                        AnimatedHeading(
+                          text: 'Create Your Account',
                           style: Theme.of(context)
                               .textTheme
                               .displaySmall
@@ -116,7 +118,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ],
                     ),
                   ),
-                  const TogetherMascot(
+                  const MisoCharacter(
                     pose: MisoPose.curious,
                     height: 64,
                     width: 64,
@@ -125,15 +127,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: AppTokens.space24),
 
-              // Name Field
-              TextFormField(
+              // Name Clay Input
+              ClayInput(
                 controller: _nameController,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  labelText: 'Your Name',
-                  hintText: 'e.g. Alex',
-                  prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
-                ),
+                labelText: 'Your Name',
+                hintText: 'e.g. Alex',
+                prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
                     return 'Please enter your name';
@@ -143,15 +142,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: AppTokens.space16),
 
-              // Email Field
-              TextFormField(
+              // Email Clay Input
+              ClayInput(
                 controller: _emailController,
+                labelText: 'Email Address',
+                hintText: 'partner@example.com',
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email Address',
-                  hintText: 'partner@example.com',
-                  prefixIcon: Icon(Icons.mail_outline_rounded, size: 20),
-                ),
+                prefixIcon: const Icon(Icons.mail_outline_rounded, size: 20),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
                     return 'Please enter your email';
@@ -164,23 +161,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: AppTokens.space16),
 
-              // Password Field
-              TextFormField(
+              // Password Clay Input
+              ClayInput(
                 controller: _passwordController,
+                labelText: 'Password',
+                hintText: '••••••••',
                 obscureText: _obscurePassword,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      size: 20,
-                    ),
-                    onPressed: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
+                prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 20,
                   ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
                 validator: (val) {
                   if (val == null || val.isEmpty) {
@@ -194,14 +190,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: AppTokens.space16),
 
-              // Confirm Password Field
-              TextFormField(
+              // Confirm Password Clay Input
+              ClayInput(
                 controller: _confirmPasswordController,
+                labelText: 'Confirm Password',
+                hintText: '••••••••',
                 obscureText: _obscurePassword,
-                decoration: const InputDecoration(
-                  labelText: 'Confirm Password',
-                  prefixIcon: Icon(Icons.lock_reset_rounded, size: 20),
-                ),
+                prefixIcon: const Icon(Icons.lock_reset_rounded, size: 20),
                 validator: (val) {
                   if (val != _passwordController.text) {
                     return 'Passwords do not match';
@@ -211,8 +206,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: AppTokens.space24),
 
-              // Register Button
-              TogetherButton(
+              // Register Tactile Clay Button
+              ClayButton(
                 label: 'Create Account',
                 onPressed: _handleRegister,
                 isLoading: _isLoading,

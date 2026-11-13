@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/clay/clay_segmented_bar.dart';
+import '../../../../shared/widgets/clay/together_surface.dart';
 import '../../../../shared/widgets/components/section_header.dart';
 import '../../../../shared/widgets/components/together_feedback.dart';
 import '../../../../shared/widgets/mascot/mascot_states.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
+import '../../../../shared/widgets/motion/text_animations.dart';
 import '../../../../shared/widgets/partner_switcher_badge.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../domain/models/together_model.dart';
@@ -60,29 +63,10 @@ class _TogetherScreenState extends ConsumerState<TogetherScreen> {
         ),
         children: [
           // Anniversary & Milestones Banner featuring Miso
-          Container(
+          TogetherSurface(
+            surfaceType: ClaySurfaceType.raised,
+            accentColor: AppColors.partnerRose,
             padding: const EdgeInsets.all(AppTokens.space20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [
-                        const Color(0xFF3B2E2E),
-                        AppColors.darkSurface,
-                      ]
-                    : [
-                        const Color(0xFFFBECEB),
-                        AppColors.surface,
-                      ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(AppTokens.radiusLg),
-              border: Border.all(
-                color: isDark ? AppColors.darkDivider : AppColors.borderSubtle,
-                width: 1,
-              ),
-              boxShadow: AppTokens.softShadow,
-            ),
             child: Row(
               children: [
                 const TogetherMascot(
@@ -98,8 +82,9 @@ class _TogetherScreenState extends ConsumerState<TogetherScreen> {
                     children: [
                       Row(
                         children: [
-                          Text(
-                            '$daysTogether Days',
+                          AnimatedNumber(
+                            value: daysTogether,
+                            suffix: ' Days',
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w800,
@@ -140,45 +125,11 @@ class _TogetherScreenState extends ConsumerState<TogetherScreen> {
           const SizedBox(height: AppTokens.space20),
 
           // Plan Type Category Tabs
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: TogetherPlanType.values.map((type) {
-                final isSelected = _selectedFilter == type;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(type.label),
-                    selected: isSelected,
-                    selectedColor: isDark
-                        ? AppColors.darkSecondary
-                        : AppColors.partnerRose,
-                    backgroundColor:
-                        isDark ? AppColors.darkSurface : AppColors.surface,
-                    labelStyle: TextStyle(
-                      color: isSelected
-                          ? AppColors.textInverse
-                          : (isDark
-                              ? AppColors.darkTextPrimary
-                              : AppColors.textPrimary),
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w500,
-                      fontSize: 13,
-                    ),
-                    side: BorderSide(
-                      color: isSelected
-                          ? Colors.transparent
-                          : (isDark
-                              ? AppColors.darkDivider
-                              : AppColors.borderSubtle),
-                    ),
-                    onSelected: (selected) {
-                      if (selected) setState(() => _selectedFilter = type);
-                    },
-                  ),
-                );
-              }).toList(),
-            ),
+          ClaySegmentedBar<TogetherPlanType>(
+            values: TogetherPlanType.values,
+            labels: TogetherPlanType.values.map((t) => t.label).toList(),
+            selectedValue: _selectedFilter,
+            onSelected: (type) => setState(() => _selectedFilter = type),
           ),
           const SizedBox(height: AppTokens.space16),
 
@@ -210,21 +161,12 @@ class _TogetherScreenState extends ConsumerState<TogetherScreen> {
             )
           else
             ...filteredPlans.map((plan) {
-              return Container(
+              return TogetherSurface(
+                surfaceType: ClaySurfaceType.raised,
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppTokens.space14,
                   vertical: AppTokens.space12,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface : AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-                  border: Border.all(
-                    color:
-                        isDark ? AppColors.darkDivider : AppColors.borderSubtle,
-                    width: 1,
-                  ),
-                  boxShadow: AppTokens.softShadow,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,

@@ -69,13 +69,31 @@ class _AppScaffoldState extends State<AppScaffold> {
                 width: 1,
               ),
             ),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x08000000),
-                offset: Offset(0, -2),
-                blurRadius: 8,
-              ),
-            ],
+            boxShadow: isDark
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.4),
+                      offset: const Offset(0, -3),
+                      blurRadius: 10,
+                    ),
+                    const BoxShadow(
+                      color: Color(0x1F5C7164),
+                      offset: Offset(0, -1),
+                      blurRadius: 1,
+                    ),
+                  ]
+                : [
+                    const BoxShadow(
+                      color: Color(0x1FB8AD9C),
+                      offset: Offset(0, -4),
+                      blurRadius: 12,
+                    ),
+                    const BoxShadow(
+                      color: Colors.white,
+                      offset: Offset(0, -1),
+                      blurRadius: 1,
+                    ),
+                  ],
           ),
           child: SafeArea(
             top: false,

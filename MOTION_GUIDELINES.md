@@ -45,3 +45,4 @@ Defined in `AppMotion`:
 ### D. Mascot's Guided Tour Spotlight
 - **Type:** Smooth spotlight tween with spring scale bubble appearance.
 - **Duration:** 350ms.
+

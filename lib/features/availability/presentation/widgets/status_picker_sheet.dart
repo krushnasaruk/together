@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/clay/clay_button.dart';
+import '../../../../shared/widgets/clay/together_surface.dart';
 import '../../../../shared/widgets/components/together_feedback.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../notifications/domain/models/notification_model.dart';
@@ -52,6 +55,7 @@ class _StatusPickerSheetState extends ConsumerState<StatusPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final keyboardBottom = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -112,50 +116,80 @@ class _StatusPickerSheetState extends ConsumerState<StatusPickerSheet> {
                   // Presets Grid
                   ...QuickStatusPreset.values.map((preset) {
                     final isSelected = _selectedPreset == preset;
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.partnerSageLight
-                            : AppColors.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.partnerSage
-                              : AppColors.borderSubtle,
-                          width: isSelected ? 1.5 : 1,
-                        ),
-                      ),
-                      child: ListTile(
-                        leading: Text(
-                          preset.emoji,
-                          style: const TextStyle(fontSize: 24),
-                        ),
-                        title: Text(
-                          preset.title,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight:
-                                isSelected ? FontWeight.w600 : FontWeight.w500,
-                            color: isSelected
-                                ? AppColors.partnerSageDark
-                                : AppColors.textPrimary,
-                          ),
-                        ),
-                        subtitle: Text(
-                          preset.subtitle,
-                          style: const TextStyle(
-                              fontSize: 12, color: AppColors.textSecondary),
-                        ),
-                        trailing: isSelected
-                            ? const Icon(Icons.check_circle_rounded,
-                                color: AppColors.partnerSage, size: 20)
-                            : null,
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: TogetherSurface(
+                        surfaceType: isSelected
+                            ? ClaySurfaceType.raised
+                            : ClaySurfaceType.flat,
                         onTap: () {
                           setState(() {
                             _selectedPreset = preset;
                           });
                         },
+                        borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                        color: isSelected
+                            ? (isDark
+                                ? const Color(0xFF3B483D)
+                                : AppColors.partnerSageLight)
+                            : (isDark
+                                ? AppColors.darkSurface
+                                : AppColors.surface),
+                        borderColor: isSelected
+                            ? AppColors.partnerSage
+                            : (isDark
+                                ? AppColors.darkDivider
+                                : AppColors.borderSubtle),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        child: Row(
+                          children: [
+                            Text(
+                              preset.emoji,
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    preset.title,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.w600,
+                                      color: isSelected
+                                          ? (isDark
+                                              ? AppColors.darkPrimary
+                                              : AppColors.partnerSageDark)
+                                          : (isDark
+                                              ? AppColors.darkTextPrimary
+                                              : AppColors.textPrimary),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    preset.subtitle,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark
+                                          ? AppColors.darkTextSecondary
+                                          : AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isSelected)
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                color: AppColors.partnerSage,
+                                size: 20,
+                              ),
+                          ],
+                        ),
                       ),
                     );
                   }),
@@ -179,12 +213,10 @@ class _StatusPickerSheetState extends ConsumerState<StatusPickerSheet> {
             // Submit Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: SizedBox(
+              child: ClayButton(
+                onPressed: _submitStatus,
+                label: 'Update Status & Inform Partner',
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _submitStatus,
-                  child: const Text('Update Status & Inform Partner'),
-                ),
               ),
             ),
           ],

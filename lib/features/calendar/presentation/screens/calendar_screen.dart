@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
+import '../../../../shared/widgets/clay/clay_segmented_bar.dart';
 import '../../../../shared/widgets/components/event_timeline_tile.dart';
 import '../../../../shared/widgets/mascot/mascot_states.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
@@ -96,75 +97,21 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       ),
       body: Column(
         children: [
-          // View Switcher Tabs (Warm, clean pills)
+          // View Switcher Tabs (Clay Segmented Bar)
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppTokens.space16,
               vertical: AppTokens.space6,
             ),
-            child: Container(
-              height: 40,
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                color:
-                    isDark ? AppColors.darkSurface : AppColors.surfaceSecondary,
-                borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-                border: Border.all(
-                  color:
-                      isDark ? AppColors.darkDivider : AppColors.borderSubtle,
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: List.generate(_viewTitles.length, (index) {
-                  final isSelected = _selectedViewIndex == index;
-                  return Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedViewIndex = index;
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? (isDark
-                                  ? const Color(0xFF38443A)
-                                  : AppColors.surface)
-                              : Colors.transparent,
-                          borderRadius:
-                              BorderRadius.circular(AppTokens.radiusSm),
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.04),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 1),
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          _viewTitles[index],
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight:
-                                isSelected ? FontWeight.w700 : FontWeight.w500,
-                            color: isSelected
-                                ? (isDark
-                                    ? AppColors.darkPrimary
-                                    : AppColors.primaryDark)
-                                : (isDark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.textSecondary),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
+            child: ClaySegmentedBar<int>(
+              values: const [0, 1, 2, 3],
+              labels: _viewTitles,
+              selectedValue: _selectedViewIndex,
+              onSelected: (index) {
+                setState(() {
+                  _selectedViewIndex = index;
+                });
+              },
             ),
           ),
 
@@ -360,6 +307,23 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           : const Color(0xFFE4EDE0))
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(AppTokens.radiusSm),
+                  boxShadow: isSelected
+                      ? (isDark
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                offset: const Offset(1, 2),
+                                blurRadius: 4,
+                              ),
+                            ]
+                          : [
+                              const BoxShadow(
+                                color: Color(0x24B8AD9C),
+                                offset: Offset(1, 2),
+                                blurRadius: 4,
+                              ),
+                            ])
+                      : null,
                   border: isToday
                       ? Border.all(
                           color: isDark
