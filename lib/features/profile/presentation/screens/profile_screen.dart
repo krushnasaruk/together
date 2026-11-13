@@ -288,8 +288,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   title: Text('Security & Data Isolation Active',
                       style:
                           TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                  subtitle: Text(
-                      'End-to-end masked privacy rules enforced',
+                  subtitle: Text('End-to-end masked privacy rules enforced',
                       style: TextStyle(
                           fontSize: 12, color: AppColors.textSecondary)),
                   trailing: Icon(Icons.check_circle_rounded,
@@ -310,7 +309,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           const SizedBox(height: 12),
           TextButton.icon(
-            icon: const Icon(Icons.delete_forever_rounded, size: 18, color: AppColors.statusCancelled),
+            icon: const Icon(Icons.delete_forever_rounded,
+                size: 18, color: AppColors.statusCancelled),
             label: const Text(
               'Delete Account & Data',
               style: TextStyle(color: AppColors.statusCancelled, fontSize: 13),
@@ -332,12 +332,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       child: const Text('Cancel'),
                     ),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.statusCancelled),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.statusCancelled),
                       onPressed: () {
                         Navigator.of(ctx).pop();
                         context.go('/welcome');
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Account successfully removed.')),
+                          const SnackBar(
+                              content: Text('Account successfully removed.')),
                         );
                       },
                       child: const Text('Confirm Deletion'),

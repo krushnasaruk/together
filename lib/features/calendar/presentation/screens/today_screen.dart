@@ -329,7 +329,8 @@ class TodayScreen extends ConsumerWidget {
                     const SizedBox(height: 2),
                     const Text(
                       'Suggested overlapping free windows (informational only)',
-                      style: TextStyle(fontSize: 11, color: AppColors.textTertiary),
+                      style: TextStyle(
+                          fontSize: 11, color: AppColors.textTertiary),
                     ),
                   ],
                 ),
@@ -337,7 +338,8 @@ class TodayScreen extends ConsumerWidget {
               TextButton(
                 onPressed: () => AddPlanSheet.show(context),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 ),
                 child: const Text('Plan', style: TextStyle(fontSize: 12)),
               ),
@@ -356,7 +358,8 @@ class TodayScreen extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.wb_sunny_outlined, size: 14, color: AppColors.togetherBlue),
+                  const Icon(Icons.wb_sunny_outlined,
+                      size: 14, color: AppColors.togetherBlue),
                   const SizedBox(width: 8),
                   Text(
                     window.formattedTime as String,
@@ -371,7 +374,8 @@ class TodayScreen extends ConsumerWidget {
                     child: Text(
                       window.suggestion as String,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                      style: const TextStyle(
+                          fontSize: 11, color: AppColors.textSecondary),
                     ),
                   ),
                 ],
