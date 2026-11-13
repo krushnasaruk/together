@@ -635,8 +635,7 @@ class TodayScreen extends ConsumerWidget {
                   ),
                   Expanded(
                     child: Text(
-                      nextEvent.displayTitleFor(
-                          partnerEvents.firstOrNull?.ownerId ?? ''),
+                      nextEvent.displayTitleFor(currentUserId),
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12,

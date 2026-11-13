@@ -19,6 +19,16 @@ class FirebaseService {
         options: DefaultFirebaseOptions.currentPlatform,
       );
 
+      // Attempt anonymous sign in so Firestore security rules (request.auth != null) pass
+      try {
+        if (FirebaseAuth.instance.currentUser == null) {
+          await FirebaseAuth.instance.signInAnonymously();
+          debugPrint('FirebaseService: Authenticated anonymously with Firebase');
+        }
+      } catch (authError) {
+        debugPrint('FirebaseService: Anonymous auth note: $authError');
+      }
+
       if (useEmulator) {
         await _connectToEmulators();
       }

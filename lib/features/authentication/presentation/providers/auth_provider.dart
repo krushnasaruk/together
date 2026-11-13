@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/models/user_model.dart';
 import '../../../pairing/domain/models/couple_model.dart';
+import '../../../../core/services/cloud_sync_service.dart';
 
 /// State of the demo authentication and pairing session.
 class AuthState {
@@ -33,8 +35,9 @@ class AuthState {
 
 class AuthNotifier extends StateNotifier<AuthState> {
   static const String _prefUserKey = 'together_current_user';
+  final Ref? _ref;
 
-  AuthNotifier()
+  AuthNotifier([this._ref])
       : super(
           AuthState(
             currentUser: UserModel.demoAlex,
@@ -82,9 +85,41 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// Join a couple workspace with an invitation code
   Future<bool> joinWithInviteCode(String code) async {
     state = state.copyWith(isLoading: true);
-    await Future.delayed(const Duration(milliseconds: 600));
 
-    // Valid demo invitation codes
+    try {
+      if (_ref != null) {
+        final cloudCouple = await _ref
+            .read(cloudSyncServiceProvider)
+            .joinOrCreateCouple(code: code, user: state.currentUser);
+        if (cloudCouple != null) {
+          final partnerName =
+              cloudCouple.getPartnerName(state.currentUser.uid) ??
+                  state.currentUser.partnerName ??
+                  'Partner';
+          final partnerId =
+              cloudCouple.getPartnerId(state.currentUser.uid) ??
+                  state.currentUser.partnerId;
+
+          final updatedUser = state.currentUser.copyWith(
+            coupleId: cloudCouple.id,
+            partnerName: partnerName,
+            partnerId: partnerId,
+          );
+
+          state = state.copyWith(
+            currentUser: updatedUser,
+            couple: cloudCouple,
+            isLoading: false,
+          );
+          await setUser(updatedUser);
+          return true;
+        }
+      }
+    } catch (e) {
+      debugPrint('Cloud pairing error: $e');
+    }
+
+    // Valid invitation codes fallback
     if (code.trim().toUpperCase() == 'TOG-789' || code.trim().length >= 4) {
       final updatedCouple = CoupleModel(
         id: 'couple_workspace_${code.trim().toUpperCase()}',
@@ -136,5 +171,5 @@ class AuthNotifier extends StateNotifier<AuthState> {
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier();
+  return AuthNotifier(ref);
 });

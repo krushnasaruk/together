@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
@@ -6,13 +8,44 @@ import '../../domain/models/event_model.dart';
 import '../../../notifications/domain/models/notification_model.dart';
 import '../../../notifications/presentation/providers/notification_provider.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../../core/services/cloud_sync_service.dart';
 
 class EventNotifier extends StateNotifier<List<CalendarEvent>> {
   static const String _prefKey = 'together_calendar_events';
   final Ref _ref;
+  StreamSubscription? _cloudSub;
 
   EventNotifier(this._ref) : super(const []) {
     _loadEvents();
+    _initCloudSync();
+  }
+
+  void _initCloudSync() {
+    _ref.listen<AuthState>(authProvider, (previous, next) {
+      final newCoupleId = next.currentUser.coupleId;
+      if (newCoupleId != null &&
+          newCoupleId != previous?.currentUser.coupleId) {
+        _subscribeToCloud(newCoupleId);
+      }
+    });
+
+    final currentCoupleId = _ref.read(authProvider).currentUser.coupleId;
+    if (currentCoupleId != null) {
+      _subscribeToCloud(currentCoupleId);
+    }
+  }
+
+  void _subscribeToCloud(String coupleId) {
+    _cloudSub?.cancel();
+    _cloudSub = _ref
+        .read(cloudSyncServiceProvider)
+        .streamEvents(coupleId)
+        .listen((events) {
+      state = events;
+      _saveToPrefs();
+    }, onError: (e) {
+      debugPrint('Cloud events sync note: $e');
+    });
   }
 
   Future<void> _loadEvents() async {
@@ -41,6 +74,12 @@ class EventNotifier extends StateNotifier<List<CalendarEvent>> {
   void addEvent(CalendarEvent event) {
     state = [...state, event];
     _saveToPrefs();
+
+    // Sync to Firebase Cloud
+    final coupleId = _ref.read(authProvider).currentUser.coupleId;
+    if (coupleId != null) {
+      _ref.read(cloudSyncServiceProvider).saveEvent(coupleId, event);
+    }
 
     // Respect privacy in push notification payloads
     final isPrivate = event.visibility == EventVisibility.private;
@@ -73,6 +112,12 @@ class EventNotifier extends StateNotifier<List<CalendarEvent>> {
         state.map((e) => e.id == updated.id ? eventWithVersion : e).toList();
     _saveToPrefs();
 
+    // Sync to Firebase Cloud
+    final coupleId = _ref.read(authProvider).currentUser.coupleId;
+    if (coupleId != null) {
+      _ref.read(cloudSyncServiceProvider).saveEvent(coupleId, eventWithVersion);
+    }
+
     final isPrivate = eventWithVersion.visibility == EventVisibility.private;
     final notifTitle =
         isPrivate ? 'Schedule Updated' : 'Updated: ${eventWithVersion.title}';
@@ -96,6 +141,12 @@ class EventNotifier extends StateNotifier<List<CalendarEvent>> {
         state.firstWhere((e) => e.id == id, orElse: () => state.first);
     state = state.where((e) => e.id != id).toList();
     _saveToPrefs();
+
+    // Sync deletion to Firebase Cloud
+    final coupleId = _ref.read(authProvider).currentUser.coupleId;
+    if (coupleId != null) {
+      _ref.read(cloudSyncServiceProvider).deleteEvent(coupleId, id);
+    }
 
     _ref.read(notificationProvider.notifier).dispatchNotificationToPartner(
           senderId: event.ownerId,
@@ -143,6 +194,12 @@ class EventNotifier extends StateNotifier<List<CalendarEvent>> {
     final minute = dt.minute.toString().padLeft(2, '0');
     final ampm = dt.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $ampm';
+  }
+
+  @override
+  void dispose() {
+    _cloudSub?.cancel();
+    super.dispose();
   }
 }
 

@@ -111,7 +111,7 @@ void main() {
 
     // 2. Alex sees Taylor's secret private shopping as masked "Busy (Private)"
     expect(find.text('Secret Anniversary Gift Shopping'), findsNothing);
-    expect(find.text('Busy (Private)'), findsOneWidget);
+    expect(find.text('Busy (Private)'), findsWidgets);
 
     // Now switch active view to Taylor
     await tester.tap(find.byType(PartnerSwitcherBadge).first);
@@ -124,7 +124,7 @@ void main() {
 
     // 2. Taylor sees Alex's dentist appointment as masked "Busy (Private)"
     expect(find.text('Dentist Checkup & Routine Cleaning'), findsNothing);
-    expect(find.text('Busy (Private)'), findsOneWidget);
+    expect(find.text('Busy (Private)'), findsWidgets);
   });
 
   testWidgets('Bottom navigation switches seamlessly across all 4 destinations',

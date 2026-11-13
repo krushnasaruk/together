@@ -1,17 +1,52 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../../notifications/domain/models/notification_model.dart';
 import '../../../notifications/presentation/providers/notification_provider.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../../core/services/cloud_sync_service.dart';
 
 class StatusNotifier extends StateNotifier<Map<String, StatusUpdate>> {
   static const String _prefKey = 'together_partner_statuses';
   final Ref _ref;
+  StreamSubscription? _cloudSub;
 
   StatusNotifier(this._ref) : super({}) {
     _loadStatuses();
+    _initCloudSync();
+  }
+
+  void _initCloudSync() {
+    _ref.listen<AuthState>(authProvider, (previous, next) {
+      final newCoupleId = next.currentUser.coupleId;
+      if (newCoupleId != null &&
+          newCoupleId != previous?.currentUser.coupleId) {
+        _subscribeToCloud(newCoupleId);
+      }
+    });
+
+    final currentCoupleId = _ref.read(authProvider).currentUser.coupleId;
+    if (currentCoupleId != null) {
+      _subscribeToCloud(currentCoupleId);
+    }
+  }
+
+  void _subscribeToCloud(String coupleId) {
+    _cloudSub?.cancel();
+    _cloudSub = _ref
+        .read(cloudSyncServiceProvider)
+        .streamStatuses(coupleId)
+        .listen((statuses) {
+      if (statuses.isNotEmpty) {
+        state = {...state, ...statuses};
+        _saveToPrefs();
+      }
+    }, onError: (e) {
+      debugPrint('Cloud status sync note: $e');
+    });
   }
 
   Future<void> _loadStatuses() async {
@@ -66,6 +101,12 @@ class StatusNotifier extends StateNotifier<Map<String, StatusUpdate>> {
       user.uid: update,
     };
     _saveToPrefs();
+
+    // Sync status to cloud
+    final coupleId = user.coupleId;
+    if (coupleId != null) {
+      _ref.read(cloudSyncServiceProvider).saveStatus(coupleId, update);
+    }
 
     // Alert partner
     _ref.read(notificationProvider.notifier).dispatchNotificationToPartner(

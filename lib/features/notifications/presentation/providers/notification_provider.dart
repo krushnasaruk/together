@@ -1,16 +1,58 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/models/notification_model.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../../core/services/cloud_sync_service.dart';
 
 class NotificationNotifier extends StateNotifier<List<NotificationItem>> {
   static const String _prefKey = 'together_notifications_feed';
   final Ref _ref;
+  StreamSubscription? _cloudSub;
 
   NotificationNotifier(this._ref) : super([]) {
     _loadNotifications();
+    _initCloudSync();
+  }
+
+  void _initCloudSync() {
+    _ref.listen<AuthState>(authProvider, (previous, next) {
+      final newCoupleId = next.currentUser.coupleId;
+      if (newCoupleId != null &&
+          newCoupleId != previous?.currentUser.coupleId) {
+        _subscribeToCloud(newCoupleId);
+      }
+    });
+
+    final currentCoupleId = _ref.read(authProvider).currentUser.coupleId;
+    if (currentCoupleId != null) {
+      _subscribeToCloud(currentCoupleId);
+    }
+  }
+
+  void _subscribeToCloud(String coupleId) {
+    _cloudSub?.cancel();
+    _cloudSub = _ref
+        .read(cloudSyncServiceProvider)
+        .streamNotifications(coupleId)
+        .listen((cloudNotifs) {
+      final currentUserId = _ref.read(authProvider).currentUser.uid;
+      // Check if new incoming notification for me
+      if (cloudNotifs.isNotEmpty && state.isNotEmpty) {
+        final newest = cloudNotifs.first;
+        final alreadyKnown = state.any((n) => n.id == newest.id);
+        if (!alreadyKnown && newest.recipientId == currentUserId) {
+          _ref.read(inAppNotificationBannerProvider.notifier).state = newest;
+        }
+      }
+      state = cloudNotifs;
+      _saveToPrefs();
+    }, onError: (e) {
+      debugPrint('Cloud notifications sync note: $e');
+    });
   }
 
   Future<void> _loadNotifications() async {
@@ -70,6 +112,12 @@ class NotificationNotifier extends StateNotifier<List<NotificationItem>> {
 
     // Trigger instant in-app notification popup
     _ref.read(inAppNotificationBannerProvider.notifier).state = item;
+
+    // Sync notification to cloud
+    final coupleId = authState.currentUser.coupleId;
+    if (coupleId != null) {
+      _ref.read(cloudSyncServiceProvider).saveNotification(coupleId, item);
+    }
   }
 
   void markAsRead(String id) {
@@ -95,6 +143,12 @@ class NotificationNotifier extends StateNotifier<List<NotificationItem>> {
   void clearNotifications(String currentUserId) {
     state = state.where((item) => item.recipientId != currentUserId).toList();
     _saveToPrefs();
+  }
+
+  @override
+  void dispose() {
+    _cloudSub?.cancel();
+    super.dispose();
   }
 }
 
