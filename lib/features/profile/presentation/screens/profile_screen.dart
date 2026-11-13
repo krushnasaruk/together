@@ -481,7 +481,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             icon: const Icon(Icons.logout_rounded, size: 18),
             label: const Text('Sign Out of Account'),
             onPressed: () {
-              context.go('/welcome');
+              context.go('/login');
             },
           ),
           const SizedBox(height: AppTokens.space12),

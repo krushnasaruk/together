@@ -56,10 +56,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
-        ),
+        leading: context.canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => context.pop(),
+              )
+            : null,
       ),
       body: SafeArea(
         child: Form(
@@ -212,6 +214,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: AppTokens.space12),
+
+              // Quick Demo Sign In
+              Center(
+                child: TextButton.icon(
+                  icon: const Icon(Icons.pets_rounded, size: 16),
+                  label: const Text('Quick Demo Login (Alex & Taylor)'),
+                  style: TextButton.styleFrom(
+                    foregroundColor:
+                        isDark ? AppColors.darkPrimary : AppColors.primaryDark,
+                  ),
+                  onPressed: () {
+                    context.go('/today');
+                    TogetherToast.show(
+                      context,
+                      message: 'Welcome Alex & Taylor!',
+                      pose: MisoPose.celebrating,
+                    );
+                  },
+                ),
               ),
             ],
           ),

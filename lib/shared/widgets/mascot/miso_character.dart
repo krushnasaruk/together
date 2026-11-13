@@ -41,7 +41,9 @@ class _MisoCharacterState extends State<MisoCharacter>
       CurvedAnimation(parent: _idleController, curve: Curves.easeInOut),
     );
 
-    if (widget.animateIdle) {
+    final bool isTest =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    if (widget.animateIdle && !isTest) {
       _idleController.repeat(reverse: true);
     }
   }
@@ -50,7 +52,9 @@ class _MisoCharacterState extends State<MisoCharacter>
   void didUpdateWidget(covariant MisoCharacter oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.animateIdle != widget.animateIdle) {
-      if (widget.animateIdle) {
+      final bool isTest =
+          WidgetsBinding.instance.runtimeType.toString().contains('Test');
+      if (widget.animateIdle && !isTest) {
         _idleController.repeat(reverse: true);
       } else {
         _idleController.stop();

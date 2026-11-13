@@ -48,7 +48,7 @@ CustomTransitionPage<void> _buildSlideFadePage({
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/today',
+    initialLocation: '/login',
     routes: [
       GoRoute(
         path: '/welcome',

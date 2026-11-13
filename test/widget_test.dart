@@ -29,6 +29,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // Fresh launch presents Login first; authenticate to enter main panel
+    if (find.text('Quick Demo Login (Alex & Taylor)').evaluate().isNotEmpty) {
+      await tester.tap(find.text('Quick Demo Login (Alex & Taylor)'));
+      await tester.pumpAndSettle();
+    }
+
     // Verify Alex is the active user
     expect(find.text('Good day, Alex'), findsOneWidget);
     expect(find.text("Taylor's Schedule"), findsOneWidget);
@@ -55,6 +61,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+
+    if (find.text('Quick Demo Login (Alex & Taylor)').evaluate().isNotEmpty) {
+      await tester.tap(find.text('Quick Demo Login (Alex & Taylor)'));
+      await tester.pumpAndSettle();
+    }
 
     // Alex's view:
     // 1. Alex sees Alex's own private dentist appointment in full detail
@@ -91,6 +102,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+
+    if (find.text('Quick Demo Login (Alex & Taylor)').evaluate().isNotEmpty) {
+      await tester.tap(find.text('Quick Demo Login (Alex & Taylor)'));
+      await tester.pumpAndSettle();
+    }
 
     // 1. Navigate to Calendar tab
     await tester.tap(find.byIcon(Icons.calendar_month_outlined));
