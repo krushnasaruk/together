@@ -107,6 +107,41 @@ class CloudSyncService {
     }
   }
 
+  /// Find active couple workspace containing the given user ID.
+  Future<CoupleModel?> findCoupleForUser(String userId) async {
+    if (_isTest || _firestore == null || userId.isEmpty) return null;
+
+    try {
+      final query = await _firestore
+          .collection('couples')
+          .where('members', arrayContains: userId)
+          .limit(1)
+          .get()
+          .timeout(const Duration(seconds: 6));
+
+      if (query.docs.isNotEmpty) {
+        final doc = query.docs.first;
+        final data = doc.data();
+        return CoupleModel(
+          id: doc.id,
+          members: List<String>.from(data['members'] as List? ?? []),
+          memberNames:
+              Map<String, String>.from(data['memberNames'] as Map? ?? {}),
+          anniversaryDate: data['anniversaryDate'] != null
+              ? DateTime.tryParse(data['anniversaryDate'] as String)
+              : null,
+          status: data['status'] as String? ?? 'active',
+          createdAt: data['createdAt'] != null
+              ? DateTime.tryParse(data['createdAt'] as String) ?? DateTime.now()
+              : DateTime.now(),
+        );
+      }
+    } catch (e) {
+      debugPrint('Cloud lookup error: $e');
+    }
+    return null;
+  }
+
   // --- 2. Calendar Events Real-Time Cloud Sync ---
 
   /// Live Firestore stream of calendar events for a couple

@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/onboarding/guided_tour_controller.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../shared/widgets/clay/clay_button.dart';
 import '../../../../shared/widgets/clay/clay_input.dart';
+import '../../../../shared/widgets/clay/google_sign_in_button.dart';
 import '../../../../shared/widgets/clay/together_toast.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../../shared/widgets/motion/text_animations.dart';
-import '../../domain/models/user_model.dart';
 import '../providers/auth_provider.dart';
 
-/// Production-ready Registration Screen enforcing input validation and tactile clay controls.
+/// Production-ready Registration Screen enabling individual profile creation with Google or Email.
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
@@ -28,6 +29,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   @override
   void dispose() {
@@ -42,27 +44,60 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      await ref.read(authProvider.notifier).registerWithEmail(
+            name: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
 
-    if (mounted) {
-      final newUser = UserModel(
-        uid: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        email: _emailController.text.trim(),
-        displayName: _nameController.text.trim(),
-        coupleId: null,
-        partnerId: null,
-        partnerName: null,
-      );
-
-      await ref.read(authProvider.notifier).setUser(newUser);
       if (!mounted) return;
       setState(() => _isLoading = false);
 
+      final user = ref.read(authProvider).currentUser;
+      ref.read(guidedTourControllerProvider.notifier).startFirstRunTour();
       context.go('/today');
       TogetherToast.show(
         context,
-        message: 'Account created! Pair with your partner in Profile.',
+        message: 'Account created! Welcome, ${user.displayName.split(' ').first}.',
         pose: MisoPose.happy,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      TogetherToast.show(
+        context,
+        message: 'Registration error: $e',
+        pose: MisoPose.confused,
+      );
+    }
+  }
+
+  void _handleGoogleSignIn() async {
+    setState(() => _isGoogleLoading = true);
+    try {
+      final success =
+          await ref.read(authProvider.notifier).signInWithGoogle();
+      if (!mounted) return;
+      setState(() => _isGoogleLoading = false);
+
+      if (success) {
+        final user = ref.read(authProvider).currentUser;
+        ref.read(guidedTourControllerProvider.notifier).startFirstRunTour();
+        context.go('/today');
+        TogetherToast.show(
+          context,
+          message: 'Welcome to Together, ${user.displayName.split(' ').first}!',
+          pose: MisoPose.happy,
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isGoogleLoading = false);
+      TogetherToast.show(
+        context,
+        message: 'Google Sign-In: $e',
+        pose: MisoPose.confused,
       );
     }
   }
@@ -106,7 +141,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Join Together to create your private two-person shared space.',
+                          'Join Together with your own individual profile and pair with your partner.',
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: isDark
@@ -129,11 +164,54 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: AppTokens.space24),
 
-              // Name Clay Input
+              // Sign up with Google Button
+              GoogleSignInButton(
+                onPressed: _handleGoogleSignIn,
+                isLoading: _isGoogleLoading,
+                label: 'Sign up with Google',
+              ),
+              const SizedBox(height: AppTokens.space20),
+
+              // OR Divider
+              Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                      color: isDark
+                          ? AppColors.darkDivider
+                          : AppColors.borderSubtle,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'OR WITH EMAIL',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      color: isDark
+                          ? AppColors.darkDivider
+                          : AppColors.borderSubtle,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppTokens.space20),
+
+              // Full Name Clay Input
               ClayInput(
                 controller: _nameController,
                 labelText: 'Your Name',
-                hintText: 'e.g. Alex',
+                hintText: 'e.g. Jordan Smith',
                 prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -148,7 +226,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ClayInput(
                 controller: _emailController,
                 labelText: 'Email Address',
-                hintText: 'partner@example.com',
+                hintText: 'you@example.com',
                 keyboardType: TextInputType.emailAddress,
                 prefixIcon: const Icon(Icons.mail_outline_rounded, size: 20),
                 validator: (val) {

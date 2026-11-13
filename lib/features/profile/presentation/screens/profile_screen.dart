@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/onboarding/guided_tour_controller.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/theme_provider.dart';
 import '../../../../shared/widgets/clay/clay_toggle.dart';
 import '../../../../shared/widgets/clay/together_surface.dart';
-import '../../../../shared/widgets/components/cards/action_card.dart';
 import '../../../../shared/widgets/components/section_header.dart';
 import '../../../../shared/widgets/components/together_avatar.dart';
 import '../../../../shared/widgets/components/together_feedback.dart';
@@ -397,34 +395,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           const SizedBox(height: AppTokens.space20),
 
-          // Miso's Little Guide Tour Walkthrough
-          const SectionHeader(
-            title: 'Miso\'s Little Guide',
-            subtitle: 'Tour Together\'s spaces and relationship features',
-            padding: EdgeInsets.only(bottom: AppTokens.space8),
-          ),
-          ActionCard(
-            title: 'Replay Guided Tour',
-            subtitle:
-                'Walk through shared calendars, privacy masking, and couple coordination with Miso.',
-            leading: const Icon(
-              Icons.explore_outlined,
-              size: 20,
-              color: AppColors.primary,
-            ),
-            onTap: () {
-              ref
-                  .read(guidedTourControllerProvider.notifier)
-                  .replayFirstRunTour();
-              TogetherFeedback.showToast(
-                context,
-                message: 'Starting Miso\'s Little Guide!',
-                pose: MisoPose.wave,
-              );
-            },
-          ),
-          const SizedBox(height: AppTokens.space20),
-
           // Account Management & Diagnostics
           const SectionHeader(
             title: 'Account & Diagnostics',
@@ -475,8 +445,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           OutlinedButton.icon(
             icon: const Icon(Icons.logout_rounded, size: 18),
             label: const Text('Sign Out of Account'),
-            onPressed: () {
-              context.go('/login');
+            onPressed: () async {
+              await ref.read(authProvider.notifier).signOut();
+              if (context.mounted) {
+                context.go('/login');
+                TogetherFeedback.showToast(
+                  context,
+                  message: 'Signed out successfully.',
+                  pose: MisoPose.wave,
+                );
+              }
             },
           ),
           const SizedBox(height: AppTokens.space12),

@@ -30,8 +30,16 @@ class PairingSheet extends ConsumerStatefulWidget {
 
 class _PairingSheetState extends ConsumerState<PairingSheet> {
   final _codeController = TextEditingController();
-  final String _generatedCode = 'TOG-789';
   bool _isJoining = false;
+
+  String get _inviteCode {
+    final user = ref.read(authProvider).currentUser;
+    if (user.uid.isNotEmpty) {
+      final hash = (user.uid.hashCode.abs() % 9000 + 1000).toString();
+      return 'TOG-$hash';
+    }
+    return 'TOG-789';
+  }
 
   @override
   void dispose() {
@@ -209,7 +217,7 @@ class _PairingSheetState extends ConsumerState<PairingSheet> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  _generatedCode,
+                                  _inviteCode,
                                   style: const TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w700,
@@ -224,7 +232,7 @@ class _PairingSheetState extends ConsumerState<PairingSheet> {
                             icon: const Icon(Icons.copy_rounded, size: 20),
                             onPressed: () {
                               Clipboard.setData(
-                                  ClipboardData(text: _generatedCode));
+                                  ClipboardData(text: _inviteCode));
                               TogetherToast.show(
                                 context,
                                 message: 'Invite code copied to clipboard!',

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../guided_tour_controller.dart';
@@ -32,6 +33,7 @@ class _GuidedTourOverlayState extends ConsumerState<GuidedTourOverlay>
   }
 
   void _syncPulseAnimation(bool isActive) {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) return;
     if (isActive) {
       if (_pulseController == null) {
         _pulseController = AnimationController(
@@ -168,23 +170,26 @@ class _GuidedTourOverlayState extends ConsumerState<GuidedTourOverlay>
           // 3. Comic Dialogue Bubble
           if (isModal)
             Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  vertical: padding.top + 24,
-                  horizontal: 8,
-                ),
-                child: ComicDialogueBubble(
-                  key: ValueKey(step.id),
-                  title: step.title,
-                  message: step.message,
-                  pose: step.pose,
-                  stepIndex: tourState.currentIndex,
-                  totalSteps: tourState.totalSteps,
-                  pointerPosition: SpeechPointerPosition.none,
-                  pointerTargetX: 0.0,
-                  onNext: tourNotifier.nextStep,
-                  onPrevious: tourNotifier.previousStep,
-                  onClose: tourNotifier.skipTour,
+              child: SizedBox(
+                width: screenSize.width,
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    vertical: padding.top + 24,
+                    horizontal: 8,
+                  ),
+                  child: ComicDialogueBubble(
+                    key: ValueKey(step.id),
+                    title: step.title,
+                    message: step.message,
+                    pose: step.pose,
+                    stepIndex: tourState.currentIndex,
+                    totalSteps: tourState.totalSteps,
+                    pointerPosition: SpeechPointerPosition.none,
+                    pointerTargetX: 0.0,
+                    onNext: tourNotifier.nextStep,
+                    onPrevious: tourNotifier.previousStep,
+                    onClose: tourNotifier.skipTour,
+                  ),
                 ),
               ),
             )
@@ -199,19 +204,22 @@ class _GuidedTourOverlayState extends ConsumerState<GuidedTourOverlay>
                   constraints: BoxConstraints(
                     maxHeight: screenSize.height * 0.65,
                   ),
-                  child: SingleChildScrollView(
-                    child: ComicDialogueBubble(
-                      key: ValueKey(step.id),
-                      title: step.title,
-                      message: step.message,
-                      pose: step.pose,
-                      stepIndex: tourState.currentIndex,
-                      totalSteps: tourState.totalSteps,
-                      pointerPosition: pointerPos,
-                      pointerTargetX: pointerTargetX,
-                      onNext: tourNotifier.nextStep,
-                      onPrevious: tourNotifier.previousStep,
-                      onClose: tourNotifier.skipTour,
+                  child: SizedBox(
+                    width: screenSize.width,
+                    child: SingleChildScrollView(
+                      child: ComicDialogueBubble(
+                        key: ValueKey(step.id),
+                        title: step.title,
+                        message: step.message,
+                        pose: step.pose,
+                        stepIndex: tourState.currentIndex,
+                        totalSteps: tourState.totalSteps,
+                        pointerPosition: pointerPos,
+                        pointerTargetX: pointerTargetX,
+                        onNext: tourNotifier.nextStep,
+                        onPrevious: tourNotifier.previousStep,
+                        onClose: tourNotifier.skipTour,
+                      ),
                     ),
                   ),
                 ),

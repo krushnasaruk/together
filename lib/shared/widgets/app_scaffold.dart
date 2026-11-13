@@ -35,6 +35,14 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     GuidedTourRegistry.register('tour_nav_calendar', _calendarKey);
     GuidedTourRegistry.register('tour_nav_together', _togetherKey);
     GuidedTourRegistry.register('tour_nav_profile', _profileKey);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final tour = ref.read(guidedTourControllerProvider);
+      if (!tour.hasCompletedFirstRun && !tour.isActive) {
+        ref.read(guidedTourControllerProvider.notifier).startFirstRunTour();
+      }
+    });
   }
 
   @override
@@ -71,6 +79,9 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
         } else if (stepId == 'step_profile') {
           widget.navigationShell.goBranch(3);
         }
+      } else if (previous?.isActive == true && !next.isActive) {
+        // Return to Today branch when the tour concludes or is dismissed
+        widget.navigationShell.goBranch(0);
       }
     });
 

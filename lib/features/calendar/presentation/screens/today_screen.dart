@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/widgets/clay/clay_button.dart';
 import '../../../../shared/widgets/clay/together_surface.dart';
 import '../../../../shared/widgets/components/event_timeline_tile.dart';
 import '../../../../shared/widgets/components/section_header.dart';
@@ -22,6 +23,7 @@ import '../../../events/presentation/widgets/event_details_sheet.dart';
 import '../../../events/presentation/widgets/event_form_sheet.dart';
 import '../../../notifications/domain/models/notification_model.dart';
 import '../../../notifications/presentation/providers/notification_provider.dart';
+import '../../../pairing/presentation/widgets/pairing_sheet.dart';
 
 /// Tracks whether Miso has greeted the user during the current session
 final misoGreetingDismissedProvider = StateProvider<bool>((ref) => false);
@@ -80,8 +82,9 @@ class TodayScreen extends ConsumerWidget {
             if (!misoGreetingDismissed) ...[
               MascotMessage(
                 pose: MisoPose.wave,
-                message:
-                    'Hi ${currentUser.displayName.split(' ').first}! Miso is keeping your and ${partnerName.split(' ').first}\'s days in sync.',
+                message: currentUser.isPaired
+                    ? 'Hi ${currentUser.displayName.isNotEmpty ? currentUser.displayName.split(' ').first : 'there'}! Miso is keeping your and ${partnerName.split(' ').first}\'s days in sync.'
+                    : 'Hi ${currentUser.displayName.isNotEmpty ? currentUser.displayName.split(' ').first : 'there'}! Welcome to Together. Let\'s coordinate your day.',
                 trailing: IconButton(
                   icon: const Icon(Icons.close_rounded, size: 16),
                   onPressed: () => ref
@@ -111,72 +114,78 @@ class TodayScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppTokens.space16),
 
-            // 3. Partner-First Overview Card with Poke & Nudge
-            _buildPartnerOverviewCard(
-              context,
-              ref: ref,
-              currentUserId: currentUser.uid,
-              currentUserName: currentUser.displayName,
-              partnerName: partnerName,
-              partnerStatus: partnerStatus,
-              partnerEvents: partnerEvents,
-              isDark: isDark,
-            ),
-            const SizedBox(height: AppTokens.space20),
-
-            // 4. Potential Time Together (Shared Free Windows)
-            if (freeWindows.isNotEmpty) ...[
-              _buildPotentialTimeTogetherCard(
+            if (!currentUser.isPaired) ...[
+              // Pairing Invite Banner when not paired yet
+              _buildPairingInviteBanner(context, isDark: isDark),
+              const SizedBox(height: AppTokens.space20),
+            ] else ...[
+              // 3. Partner-First Overview Card with Poke & Nudge
+              _buildPartnerOverviewCard(
                 context,
-                freeWindows: freeWindows,
+                ref: ref,
+                currentUserId: currentUser.uid,
+                currentUserName: currentUser.displayName,
+                partnerName: partnerName,
+                partnerStatus: partnerStatus,
+                partnerEvents: partnerEvents,
                 isDark: isDark,
               ),
               const SizedBox(height: AppTokens.space20),
-            ],
 
-            // 5. Shared Together Plans (if any today)
-            if (sharedEvents.isNotEmpty) ...[
-              const SectionHeader(
-                title: 'Together Tonight',
-                subtitle: 'Plans shared between both of you',
-                icon: Icons.favorite_rounded,
-                padding: EdgeInsets.only(bottom: AppTokens.space8),
-              ),
-              ...sharedEvents.map(
-                (event) => EventTimelineTile(
-                  event: event,
-                  currentUserId: currentUser.uid,
-                  onTap: () => EventDetailsSheet.show(context, event),
+              // 4. Potential Time Together (Shared Free Windows)
+              if (freeWindows.isNotEmpty) ...[
+                _buildPotentialTimeTogetherCard(
+                  context,
+                  freeWindows: freeWindows,
+                  isDark: isDark,
                 ),
-              ),
-              const SizedBox(height: AppTokens.space16),
-            ],
+                const SizedBox(height: AppTokens.space20),
+              ],
 
-            // 6. Partner's Schedule Section (Partner-First Principle)
-            SectionHeader(
-              title: "${partnerName.split(' ').first}'s Schedule",
-              subtitle: 'Daily commitments & busy intervals',
-              icon: Icons.person_outline_rounded,
-              padding: const EdgeInsets.only(bottom: AppTokens.space8),
-            ),
-            if (partnerEvents.isEmpty)
-              MascotEmptyState(
-                title: 'No events scheduled',
-                message:
-                    '${partnerName.split(' ').first} has not scheduled any events for today yet.',
-                pose: MisoPose.sleeping,
-                mascotHeight: 90,
-              )
-            else
-              ...partnerEvents.map(
-                (event) => EventTimelineTile(
-                  event: event,
-                  currentUserId: currentUser.uid,
-                  isPast: event.endTime.isBefore(now),
-                  onTap: () => EventDetailsSheet.show(context, event),
+              // 5. Shared Together Plans (if any today)
+              if (sharedEvents.isNotEmpty) ...[
+                const SectionHeader(
+                  title: 'Together Tonight',
+                  subtitle: 'Plans shared between both of you',
+                  icon: Icons.favorite_rounded,
+                  padding: EdgeInsets.only(bottom: AppTokens.space8),
                 ),
+                ...sharedEvents.map(
+                  (event) => EventTimelineTile(
+                    event: event,
+                    currentUserId: currentUser.uid,
+                    onTap: () => EventDetailsSheet.show(context, event),
+                  ),
+                ),
+                const SizedBox(height: AppTokens.space16),
+              ],
+
+              // 6. Partner's Schedule Section (Partner-First Principle)
+              SectionHeader(
+                title: "${partnerName.split(' ').first}'s Schedule",
+                subtitle: 'Daily commitments & busy intervals',
+                icon: Icons.person_outline_rounded,
+                padding: const EdgeInsets.only(bottom: AppTokens.space8),
               ),
-            const SizedBox(height: AppTokens.space24),
+              if (partnerEvents.isEmpty)
+                MascotEmptyState(
+                  title: 'No events scheduled',
+                  message:
+                      '${partnerName.split(' ').first} has not scheduled any events for today yet.',
+                  pose: MisoPose.sleeping,
+                  mascotHeight: 90,
+                )
+              else
+                ...partnerEvents.map(
+                  (event) => EventTimelineTile(
+                    event: event,
+                    currentUserId: currentUser.uid,
+                    isPast: event.endTime.isBefore(now),
+                    onTap: () => EventDetailsSheet.show(context, event),
+                  ),
+                ),
+              const SizedBox(height: AppTokens.space24),
+            ],
 
             // 7. User's Own Schedule Section
             const SectionHeader(
@@ -220,6 +229,58 @@ class TodayScreen extends ConsumerWidget {
           'Add Event',
           style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
         ),
+      ),
+    );
+  }
+
+  /// Pairing invitation banner shown when user has not yet paired with a partner
+  Widget _buildPairingInviteBanner(BuildContext context, {required bool isDark}) {
+    return TogetherSurface(
+      surfaceType: ClaySurfaceType.raised,
+      padding: const EdgeInsets.all(AppTokens.space20),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const TogetherMascot(
+                pose: MisoPose.curious,
+                width: 58,
+                height: 58,
+              ),
+              const SizedBox(width: AppTokens.space16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Two Lives. One Space.',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Link with your partner to coordinate schedules, share availability, and sync plans in real time.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.textSecondary,
+                            height: 1.35,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTokens.space16),
+          ClayButton(
+            label: 'Pair with Partner',
+            icon: const Icon(Icons.link_rounded, size: 18),
+            onPressed: () => PairingSheet.show(context),
+            expanded: true,
+          ),
+        ],
       ),
     );
   }

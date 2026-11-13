@@ -24,6 +24,18 @@ class UserModel {
   });
 
   bool get isPaired => coupleId != null && coupleId!.isNotEmpty;
+  bool get isAuthenticated => uid.isNotEmpty;
+
+  // Unauthenticated guest user
+  static const UserModel initialGuest = UserModel(
+    uid: '',
+    email: '',
+    displayName: 'You',
+    coupleId: null,
+    partnerId: null,
+    partnerName: null,
+    themeColor: AppColors.partnerSage,
+  );
 
   UserModel copyWith({
     String? uid,

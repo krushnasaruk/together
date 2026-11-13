@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/onboarding/guided_tour_controller.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../shared/widgets/clay/clay_button.dart';
 import '../../../../shared/widgets/clay/clay_input.dart';
+import '../../../../shared/widgets/clay/google_sign_in_button.dart';
 import '../../../../shared/widgets/clay/together_toast.dart';
 import '../../../../shared/widgets/mascot/together_mascot.dart';
 import '../../../../shared/widgets/motion/text_animations.dart';
+import '../providers/auth_provider.dart';
 
-/// Production-ready Login Screen with client-side validation and tactile claymorphic controls.
+/// Production-ready Login Screen with Google Sign-In and tactile claymorphic controls.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -23,6 +26,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   @override
   void dispose() {
@@ -35,15 +39,59 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    if (mounted) {
+    try {
+      await ref.read(authProvider.notifier).signInWithEmail(
+            _emailController.text.trim(),
+            _passwordController.text,
+          );
+      if (!mounted) return;
       setState(() => _isLoading = false);
+
+      final user = ref.read(authProvider).currentUser;
+      // Launch Miso's Little Guide upon successful login
+      ref.read(guidedTourControllerProvider.notifier).startFirstRunTour();
       context.go('/today');
       TogetherToast.show(
         context,
-        message: 'Welcome back to Together!',
+        message: 'Welcome back, ${user.displayName.split(' ').first}!',
         pose: MisoPose.happy,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      TogetherToast.show(
+        context,
+        message: 'Sign in error: $e',
+        pose: MisoPose.confused,
+      );
+    }
+  }
+
+  void _handleGoogleSignIn() async {
+    setState(() => _isGoogleLoading = true);
+    try {
+      final success =
+          await ref.read(authProvider.notifier).signInWithGoogle();
+      if (!mounted) return;
+      setState(() => _isGoogleLoading = false);
+
+      if (success) {
+        final user = ref.read(authProvider).currentUser;
+        ref.read(guidedTourControllerProvider.notifier).startFirstRunTour();
+        context.go('/today');
+        TogetherToast.show(
+          context,
+          message: 'Welcome to Together, ${user.displayName.split(' ').first}!',
+          pose: MisoPose.happy,
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isGoogleLoading = false);
+      TogetherToast.show(
+        context,
+        message: 'Google Sign-In: $e',
+        pose: MisoPose.confused,
       );
     }
   }
@@ -112,11 +160,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: AppTokens.space28),
 
+              // Active Google Sign In Button
+              GoogleSignInButton(
+                onPressed: _handleGoogleSignIn,
+                isLoading: _isGoogleLoading,
+                label: 'Sign in with Google',
+              ),
+              const SizedBox(height: AppTokens.space20),
+
+              // OR Divider
+              Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                      color: isDark
+                          ? AppColors.darkDivider
+                          : AppColors.borderSubtle,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'OR WITH EMAIL',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      color: isDark
+                          ? AppColors.darkDivider
+                          : AppColors.borderSubtle,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppTokens.space20),
+
               // Email Clay Input
               ClayInput(
                 controller: _emailController,
                 labelText: 'Email Address',
-                hintText: 'partner@example.com',
+                hintText: 'you@example.com',
                 keyboardType: TextInputType.emailAddress,
                 prefixIcon: const Icon(Icons.mail_outline_rounded, size: 20),
                 validator: (val) {
@@ -177,7 +268,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: AppTokens.space20),
+              const SizedBox(height: AppTokens.space16),
 
               // Sign In Tactile Clay Button
               ClayButton(
@@ -187,7 +278,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 expanded: true,
                 height: AppTokens.buttonHeightLg,
               ),
-              const SizedBox(height: AppTokens.space16),
+              const SizedBox(height: AppTokens.space20),
 
               // Register Link
               Row(
@@ -216,27 +307,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: AppTokens.space12),
-
-              // Quick Demo Sign In
-              Center(
-                child: TextButton.icon(
-                  icon: const Icon(Icons.pets_rounded, size: 16),
-                  label: const Text('Quick Demo Login (Alex & Taylor)'),
-                  style: TextButton.styleFrom(
-                    foregroundColor:
-                        isDark ? AppColors.darkPrimary : AppColors.primaryDark,
-                  ),
-                  onPressed: () {
-                    context.go('/today');
-                    TogetherToast.show(
-                      context,
-                      message: 'Welcome Alex & Taylor!',
-                      pose: MisoPose.celebrating,
-                    );
-                  },
-                ),
               ),
             ],
           ),

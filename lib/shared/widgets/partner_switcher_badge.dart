@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/app_colors.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
+import '../../features/pairing/presentation/widgets/pairing_sheet.dart';
 import 'components/together_feedback.dart';
 import 'mascot/together_mascot.dart';
 
-/// Discreet pill allowing quick switching between Partner A and Partner B in demo mode.
+/// Discreet pill in the header showing active user identity and couple status.
 class PartnerSwitcherBadge extends ConsumerWidget {
   const PartnerSwitcherBadge({super.key});
 
@@ -13,18 +15,22 @@ class PartnerSwitcherBadge extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final user = auth.currentUser;
     final partnerColor = user.themeColor;
+    final isPaired = auth.isPaired;
 
     return InkWell(
       onTap: () {
-        ref.read(authProvider.notifier).switchPartner();
-        final switchedTo =
-            user.uid == 'user_alex' ? 'Taylor Brooks' : 'Alex Rivers';
-        TogetherFeedback.showToast(
-          context,
-          message: 'Switched persona to $switchedTo',
-          pose: MisoPose.wave,
-          duration: const Duration(seconds: 1),
-        );
+        if (!isPaired) {
+          PairingSheet.show(context);
+        } else {
+          ref.read(authProvider.notifier).switchPartner();
+          final switchedTo = ref.read(authProvider).currentUser.displayName;
+          TogetherFeedback.showToast(
+            context,
+            message: 'Viewing as $switchedTo',
+            pose: MisoPose.wave,
+            duration: const Duration(seconds: 1),
+          );
+        }
       },
       borderRadius: BorderRadius.circular(20),
       child: Container(
@@ -41,25 +47,31 @@ class PartnerSwitcherBadge extends ConsumerWidget {
               width: 7,
               height: 7,
               decoration: BoxDecoration(
-                color: partnerColor,
+                color: isPaired ? partnerColor : AppColors.primary,
                 shape: BoxShape.circle,
               ),
             ),
             const SizedBox(width: 6),
             Text(
-              user.displayName.split(' ').first,
+              isPaired
+                  ? (user.displayName.isNotEmpty
+                      ? user.displayName.split(' ').first
+                      : 'You')
+                  : 'Link Partner +',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: partnerColor,
               ),
             ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.swap_horiz_rounded,
-              size: 14,
-              color: partnerColor,
-            ),
+            if (isPaired) ...[
+              const SizedBox(width: 4),
+              Icon(
+                Icons.swap_horiz_rounded,
+                size: 14,
+                color: partnerColor,
+              ),
+            ],
           ],
         ),
       ),

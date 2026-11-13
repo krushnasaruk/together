@@ -162,6 +162,7 @@ class ComicDialogueBubble extends StatelessWidget {
 
               // Footer: Previous / Step Indicator / Next
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Previous or End Tour button
                   TextButton(
@@ -182,8 +183,6 @@ class ComicDialogueBubble extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                  const Spacer(),
 
                   // Step indicator pill (e.g., "2/6")
                   Container(
@@ -208,8 +207,6 @@ class ComicDialogueBubble extends StatelessWidget {
                     ),
                   ),
 
-                  const Spacer(),
-
                   // Next or Finish Button
                   ElevatedButton(
                     onPressed: onNext,
@@ -217,6 +214,7 @@ class ComicDialogueBubble extends StatelessWidget {
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                       elevation: 0,
+                      minimumSize: const Size(80, 36),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppTokens.radiusMd),
                       ),

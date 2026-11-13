@@ -148,9 +148,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
             child: Row(
               children: [
-                _buildLegendItem('You (Alex)', AppColors.partnerSage),
+                _buildLegendItem(
+                  'You (${auth.currentUser.displayName.isNotEmpty ? auth.currentUser.displayName.split(' ').first : 'You'})',
+                  AppColors.partnerSage,
+                ),
                 const SizedBox(width: AppTokens.space12),
-                _buildLegendItem('Partner (Taylor)', AppColors.partnerRose),
+                _buildLegendItem(
+                  auth.currentUser.partnerName != null &&
+                          auth.currentUser.partnerName!.isNotEmpty
+                      ? 'Partner (${auth.currentUser.partnerName!.split(' ').first})'
+                      : 'Partner',
+                  AppColors.partnerRose,
+                ),
                 const SizedBox(width: AppTokens.space12),
                 _buildLegendItem('Together', AppColors.togetherBlue),
                 const Spacer(),
@@ -211,6 +220,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     String currentUserId,
     bool isDark,
   ) {
+    final auth = ref.watch(authProvider);
     final firstDayOfMonth = DateTime(_focusedDate.year, _focusedDate.month, 1);
     final daysInMonth =
         DateTime(_focusedDate.year, _focusedDate.month + 1, 0).day;
@@ -281,9 +291,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   e.startTime.day == cellDate.day;
             }).toList();
 
-            final hasAlex = dayEvents.any((e) => e.ownerId == 'user_alex');
-            final hasTaylor = dayEvents.any((e) => e.ownerId == 'user_taylor');
-            final hasTogether = dayEvents.any((e) => e.ownerName.contains('&'));
+            final hasMyEvents = dayEvents.any((e) =>
+                e.ownerId == auth.currentUser.uid ||
+                e.ownerId == 'user_alex');
+            final hasPartnerEvents = dayEvents.any((e) =>
+                (auth.currentUser.partnerId != null &&
+                    e.ownerId == auth.currentUser.partnerId) ||
+                e.ownerId == 'user_taylor');
+            final hasTogether = dayEvents.any((e) =>
+                e.visibility == EventVisibility.shared ||
+                e.ownerName.contains('&'));
 
             return GestureDetector(
               onTap: () {
@@ -355,8 +372,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        if (hasAlex) _buildDot(AppColors.partnerSage),
-                        if (hasTaylor) _buildDot(AppColors.partnerRose),
+                        if (hasMyEvents) _buildDot(AppColors.partnerSage),
+                        if (hasPartnerEvents) _buildDot(AppColors.partnerRose),
                         if (hasTogether) _buildDot(AppColors.togetherBlue),
                       ],
                     ),

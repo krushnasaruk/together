@@ -92,7 +92,7 @@ class NotificationNotifier extends StateNotifier<List<NotificationItem>> {
   }) {
     final authState = _ref.read(authProvider);
     final recipientId = authState.currentUser.partnerId ??
-        (senderId == 'user_alex' ? 'user_taylor' : 'user_alex');
+        (senderId == 'user_alex' ? 'user_taylor' : 'partner_recipient');
 
     final item = NotificationItem(
       id: const Uuid().v4(),

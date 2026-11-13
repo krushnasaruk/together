@@ -31,9 +31,14 @@ void main() {
     await tester.pumpAndSettle();
 
     // Fresh launch presents Login first; authenticate to enter main panel
-    if (find.text('Quick Demo Login (Alex & Taylor)').evaluate().isNotEmpty) {
-      await tester.tap(find.text('Quick Demo Login (Alex & Taylor)'));
+    if (find.text('Sign in with Google').evaluate().isNotEmpty) {
+      await tester.tap(find.text('Sign in with Google'));
       await tester.pumpAndSettle();
+      // Tour is presented right after login
+      if (find.text('End Tour').evaluate().isNotEmpty) {
+        await tester.tap(find.text('End Tour'));
+        await tester.pumpAndSettle();
+      }
     }
 
     // Verify Alex is the active user and Today screen components render
@@ -100,9 +105,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    if (find.text('Quick Demo Login (Alex & Taylor)').evaluate().isNotEmpty) {
-      await tester.tap(find.text('Quick Demo Login (Alex & Taylor)'));
+    if (find.text('Sign in with Google').evaluate().isNotEmpty) {
+      await tester.tap(find.text('Sign in with Google'));
       await tester.pumpAndSettle();
+      if (find.text('End Tour').evaluate().isNotEmpty) {
+        await tester.tap(find.text('End Tour'));
+        await tester.pumpAndSettle();
+      }
     }
 
     // Alex's view:
@@ -141,9 +150,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    if (find.text('Quick Demo Login (Alex & Taylor)').evaluate().isNotEmpty) {
-      await tester.tap(find.text('Quick Demo Login (Alex & Taylor)'));
+    if (find.text('Sign in with Google').evaluate().isNotEmpty) {
+      await tester.tap(find.text('Sign in with Google'));
       await tester.pumpAndSettle();
+      if (find.text('End Tour').evaluate().isNotEmpty) {
+        await tester.tap(find.text('End Tour'));
+        await tester.pumpAndSettle();
+      }
     }
 
     // 1. Navigate to Calendar tab

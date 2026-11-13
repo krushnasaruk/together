@@ -38,11 +38,11 @@ class EventDetailsSheet extends ConsumerWidget {
     final timeStr =
         '${DateFormat('h:mm a').format(event.startTime)} - ${DateFormat('h:mm a').format(event.endTime)}';
 
-    final partnerColor = event.ownerId == 'user_alex'
+    final partnerColor = isOwner
         ? AppColors.partnerSage
-        : (event.ownerId == 'user_taylor'
-            ? AppColors.partnerRose
-            : AppColors.togetherBlue);
+        : (event.visibility == EventVisibility.shared
+            ? AppColors.togetherBlue
+            : AppColors.partnerRose);
 
     return Container(
       constraints: BoxConstraints(
