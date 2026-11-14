@@ -113,16 +113,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
 
       final GoogleSignInAuthentication auth = await account.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: auth.accessToken,
-        idToken: auth.idToken,
-      );
-
       User? fbUser;
       try {
-        final result =
-            await FirebaseAuth.instance.signInWithCredential(credential);
-        fbUser = result.user;
+        if (auth.idToken != null || auth.accessToken != null) {
+          final AuthCredential credential = GoogleAuthProvider.credential(
+            accessToken: auth.accessToken,
+            idToken: auth.idToken,
+          );
+          final result =
+              await FirebaseAuth.instance.signInWithCredential(credential);
+          fbUser = result.user;
+        }
       } catch (e) {
         debugPrint('Firebase Auth link note: $e');
       }

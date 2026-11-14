@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -94,12 +95,93 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isGoogleLoading = false);
-      TogetherToast.show(
-        context,
-        message: 'Google Sign-In: $e',
-        pose: MisoPose.confused,
-      );
+      final errStr = e.toString();
+      if (errStr.contains('10') || errStr.contains('sign_in_failed')) {
+        _showGoogleSetupDialog(context);
+      } else {
+        TogetherToast.show(
+          context,
+          message: 'Google Sign-In: $e',
+          pose: MisoPose.confused,
+        );
+      }
     }
+  }
+
+  void _showGoogleSetupDialog(BuildContext context) {
+    const sha1 = 'A3:FB:4E:2D:A2:85:C1:CF:B0:42:1A:1F:59:7D:6F:B0:9C:91:25:D4';
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            TogetherMascot(pose: MisoPose.confused, width: 36, height: 36),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Firebase Setup Needed',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Google Sign-In was rejected by Google Play Services (Error 10).\n\n'
+              'To enable Google Sign-In, add this app\'s SHA-1 fingerprint in your Firebase Console under Project Settings -> Your apps -> Add fingerprint:',
+              style: TextStyle(fontSize: 13, height: 1.4),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.withOpacity(0.3)),
+              ),
+              child: const SelectableText(
+                sha1,
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Tip: You can register your account using the form below right now without waiting!',
+              style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton.icon(
+            icon: const Icon(Icons.copy_rounded, size: 16),
+            label: const Text('Copy SHA-1'),
+            onPressed: () {
+              Clipboard.setData(const ClipboardData(text: sha1));
+              TogetherToast.show(
+                ctx,
+                message: 'SHA-1 copied to clipboard!',
+                pose: MisoPose.wave,
+              );
+            },
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(100, 38),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Use Form'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
